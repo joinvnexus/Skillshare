@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "title": "Mastering Vue.js",
+    "instructor": "John Doe",
+    "description": "Learn the essentials of Vue.js with hands-on projects.",
+    "rating": 4.8,
+    "students": 1250,
+    "duration": "12 hours",
+    "lessons": 45,
+    "descriptionExtended": "This course covers everything from basics to advanced concepts, including state management, Vue Router, and more.",
+    "fullDescription": "Mastering Vue.js is the ultimate course to learn the essentials of Vue.js, starting from the basics to more advanced concepts like state management with Vuex, routing with Vue Router, and building real-world applications. Dive into practical projects and hands-on exercises to solidify your understanding.",
+    "image": "/images/courses/vue-mastering.jpg"
+  },
+  {
+    "id": 2,
+    "title": "Advanced Vue Animations",
+    "instructor": "Jane Smith",
+    "description": "Deep dive into Vue animations and transitions.",
+    "rating": 4.7,
+    "students": 890,
+    "duration": "8 hours",
+    "lessons": 32,
+    "descriptionExtended": "Explore advanced animation techniques, including dynamic transitions, animation hooks, and scroll-triggered animations.",
+    "fullDescription": "In Advanced Vue Animations, you will explore cutting-edge animation techniques using Vue.js. Learn how to build immersive user interfaces with dynamic transitions, animation hooks, and scroll-based animations. This course is perfect for developers who want to enhance the interactivity and user experience of their Vue applications.",
+    "image": "/images/courses/vue-animations.jpg"
+  },
+  {
+    "id": 3,
+    "title": "Vue.js and Vuex Mastery",
+    "instructor": "Emily White",
+    "description": "Master Vuex for state management in large-scale Vue.js applications.",
+    "rating": 4.9,
+    "students": 1500,
+    "duration": "10 hours",
+    "lessons": 38,
+    "descriptionExtended": "Learn how to manage complex state in your Vue applications, build robust architectures, and create seamless user experiences.",
+    "fullDescription": "This Vue.js and Vuex Mastery course focuses on state management, a crucial aspect of building large-scale Vue.js applications. You'll learn the intricacies of Vuex, how to design scalable state management architectures, and create applications that are easy to maintain and enhance over time.",
+    "image": "/images/courses/vue-vuex.jpg"
+  }
+]

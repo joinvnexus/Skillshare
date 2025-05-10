@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "name": "John Doe",
+    "title": "Senior Vue.js Developer",
+    "bio": "John is an experienced Vue.js developer with over 10 years in web development. He specializes in performance optimization and state management.",
+    "photo": "/images/instructors/john-doe.jpg",
+    "socialLinks": [
+      { "platform": "LinkedIn", "url": "https://linkedin.com/in/johndoe", "iconClass": "fab fa-linkedin" },
+      { "platform": "Twitter", "url": "https://twitter.com/johndoe", "iconClass": "fab fa-twitter" },
+      { "platform": "GitHub", "url": "https://github.com/johndoe", "iconClass": "fab fa-github" }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Jane Smith",
+    "title": "Full-Stack Developer & Mentor",
+    "bio": "Jane specializes in full-stack web development and has taught thousands of students. She's passionate about clean code and best practices.",
+    "photo": "/images/instructors/jane-smith.jpg",
+    "socialLinks": [
+      { "platform": "LinkedIn", "url": "https://linkedin.com/in/janesmith", "iconClass": "fab fa-linkedin" },
+      { "platform": "Twitter", "url": "https://twitter.com/janesmith", "iconClass": "fab fa-twitter" }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Alex Johnson",
+    "title": "UI/UX Specialist",
+    "bio": "Alex combines development skills with design expertise to create beautiful, user-friendly interfaces with Vue.js.",
+    "photo": "/images/instructors/alex-johnson.jpg",
+    "socialLinks": [
+      { "platform": "LinkedIn", "url": "https://linkedin.com/in/alexjohnson", "iconClass": "fab fa-linkedin" },
+      { "platform": "Dribbble", "url": "https://dribbble.com/alexjohnson", "iconClass": "fab fa-dribbble" }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Maria Garcia",
+    "title": "Nuxt.js Expert",
+    "bio": "Maria is a Nuxt.js core contributor who helps developers build universal Vue applications with confidence.",
+    "photo": "/images/instructors/maria-garcia.jpg",
+    "socialLinks": [
+      { "platform": "LinkedIn", "url": "https://linkedin.com/in/mariagarcia", "iconClass": "fab fa-linkedin" },
+      { "platform": "GitHub", "url": "https://github.com/mariagarcia", "iconClass": "fab fa-github" }
+    ]
+  }
+]
