@@ -4,7 +4,7 @@ import learningPaths from './modules/learningPaths'
 import instructors from './modules/instructors'
 import testimonials from './modules/testimonials'
 import courses from './modules/courses'
-
+import blog from './modules/blog'
 
 
 
@@ -15,6 +15,7 @@ const store = createStore({
     instructors,
     testimonials,
     courses,
+    blog
     
   }
 })

@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "title": "Master Vue.js with Expert Guidance",
+    "snippet": "Discover the best techniques to become proficient in Vue.js, starting from basics to advanced.",
+    "image": "/images/blog/vue-expert.jpg",
+    "content": "Full article content would go here...",
+    "date": "2023-05-15",
+    "author": "Jane Doe",
+    "tags": ["Vue", "Frontend"]
+  },
+  {
+    "id": 2,
+    "title": "Top 10 Vue.js Tips and Tricks",
+    "snippet": "Enhance your Vue.js skills with these top tips and tricks from industry experts.",
+    "image": "/images/blog/vue-tips.jpg",
+    "content": "Full article content would go here...",
+    "date": "2023-05-10",
+    "author": "John Smith",
+    "tags": ["Vue", "Tips"]
+  },
+  {
+    "id": 3,
+    "title": "Building a Vue.js Project from Scratch",
+    "snippet": "A step-by-step guide to building your first Vue.js project, from setup to deployment.",
+    "image": "/images/blog/vue-project.jpg",
+    "content": "Full article content would go here...",
+    "date": "2023-05-05",
+    "author": "Alice Johnson",
+    "tags": ["Vue", "Tutorial"]
+  },
+  {
+    "id": 4,
+    "title": "Vue 3 Composition API Deep Dive",
+    "snippet": "Learn how to leverage the new Composition API in Vue 3 for better code organization.",
+    "image": "/images/blog/vue-composition.jpg",
+    "content": "Full article content would go here...",
+    "date": "2023-04-28",
+    "author": "Bob Wilson",
+    "tags": ["Vue", "Composition API"]
+  }
+]

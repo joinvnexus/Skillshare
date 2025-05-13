@@ -44,11 +44,13 @@
       <div class="flex items-center space-x-4">
         <!-- Search Bar - Hidbden on mobile -->
         <div class="relative hidden lg:block">
-          <input 
-            type="text" 
-            placeholder="Search courses..." 
-            v-model="searchQuery"
-            class="py-2 px-4 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+
+           <input
+                :value="searchQuery"
+                @input="handleSearchInput"
+                type="text"
+                placeholder="Search courses..."
+                class="py-2 px-4 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             @keyup.enter="performSearch"
           >
           <button 
@@ -197,14 +199,27 @@ export default {
   data() {
     return {
       searchQuery: '',
+      showSearch: false,
       showDropdown: false,
       isMobileMenuOpen: false,
     };
   },
+  computed: {
+    // ...mapState(' Courses', ['searchQuery']),
+  },
   methods: {
+    handleSearchInput(event) {
+      this.searchQuery = event.target.value;
+    },
     performSearch() {
       // Handle search functionality
       console.log('Searching for:', this.searchQuery);
+      this.searchQuery = '';
+    },
+    performSearch() {
+      // Handle search functionality
+      console.log('Searching for:', this.searchQuery);
+      this.updateSearchQuery(this.searchQuery);
       this.searchQuery = '';
     },
     toggleDropdown() {

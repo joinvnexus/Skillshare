@@ -42,6 +42,12 @@
       "Mixins",
       "Vue Router"
     ],
+    "skills": [
+      "Vue CLI",
+      "Vue Router",
+      "Vuex",
+      "Axios"
+    ],
     "curriculum": [
       {
         "module": 1,

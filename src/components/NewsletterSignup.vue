@@ -1,168 +1,150 @@
 <template>
-    <section class="newsletter-signup">
-      <div class="container">
-        <!-- Title and Description -->
-        <h2 class="newsletter-title">Stay Updated</h2>
-        <p class="newsletter-description">
-          Subscribe to our newsletter to receive the latest updates, tutorials, and exclusive offers.
+  <section class="py-16 bg-gradient-to-r from-blue-50 to-indigo-50">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+      <!-- Title and Description -->
+      <div class="text-center mb-8" data-aos="fade-up">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+          Stay Updated
+        </h2>
+        <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+          Subscribe to our newsletter for the latest updates, tutorials, and exclusive offers.
         </p>
-  
-        <!-- Signup Form -->
-        <form class="signup-form" @submit.prevent="subscribe">
-          <div class="input-wrapper">
+      </div>
+
+      <!-- Signup Form -->
+      <form 
+        @submit.prevent="subscribe"
+        class="max-w-md mx-auto"
+        data-aos="fade-up" data-aos-delay="100"
+      >
+        <div class="flex flex-col sm:flex-row gap-3">
+          <!-- Email Input -->
+          <div class="relative flex-grow">
             <input
               type="email"
               v-model="email"
-              placeholder="Enter your email address"
-              class="email-input"
+              placeholder="Enter your email"
               required
-            />
-            <button type="submit" class="subscribe-btn">Subscribe</button>
+              class="w-full px-5 py-3 pr-12 rounded-full border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all duration-200"
+              :class="{'border-green-500': isSuccess, 'border-red-500': isError}"
+            >
+            <svg 
+              v-if="isSuccess"
+              class="absolute right-3 top-3.5 h-5 w-5 text-green-500" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
           </div>
-        </form>
-      </div>
-    </section>
-  </template>
-  
-  <script>
-  export default {
-    name: "NewsletterSignup",
-    data() {
-      return {
-        email: "",
-      };
-    },
-    methods: {
-      subscribe() {
-        if (this.email) {
-          // Simulate a successful subscription
-          alert(`Thank you for subscribing with: ${this.email}`);
-          this.email = ""; // Clear the email field
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all duration-300 whitespace-nowrap"
+            :disabled="isLoading"
+          >
+            <span v-if="!isLoading">Subscribe</span>
+            <span v-else class="flex items-center justify-center">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Processing...
+            </span>
+          </button>
+        </div>
+
+        <!-- Messages -->
+        <div class="mt-3 text-center">
+          <p v-if="isSuccess" class="text-green-600 font-medium">
+            Thank you for subscribing! Check your email for confirmation.
+          </p>
+          <p v-if="isError" class="text-red-600 font-medium">
+            {{ errorMessage }}
+          </p>
+        </div>
+      </form>
+
+      <!-- Privacy Note -->
+      <p class="mt-8 text-center text-sm text-gray-500 max-w-lg mx-auto">
+        We respect your privacy. Unsubscribe at any time.
+      </p>
+    </div>
+  </section>
+</template>
+
+<script>
+export default {
+  name: "NewsletterSignup",
+  data() {
+    return {
+      email: "",
+      isLoading: false,
+      isSuccess: false,
+      isError: false,
+      errorMessage: ""
+    };
+  },
+  methods: {
+    async subscribe() {
+      this.isLoading = true;
+      this.isError = false;
+      this.isSuccess = false;
+
+      try {
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Validate email
+        if (!this.validateEmail(this.email)) {
+          throw new Error("Please enter a valid email address");
         }
-      },
+
+        // Success state
+        this.isSuccess = true;
+        this.email = "";
+        
+        // Reset success state after 5 seconds
+        setTimeout(() => {
+          this.isSuccess = false;
+        }, 5000);
+      } catch (error) {
+        this.isError = true;
+        this.errorMessage = error.message || "Subscription failed. Please try again.";
+      } finally {
+        this.isLoading = false;
+      }
     },
-  };
-  </script>
-  
-  <style scoped>
-  /* Newsletter Signup Section */
-  .newsletter-signup {
-    padding: 60px 20px;
-    background-color: #f4f9fc;
-    text-align: center;
-    animation: fadeIn 1s ease;
-  }
-  
-  .container {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  
-  /* Title */
-  .newsletter-title {
-    font-size: 2.5rem;
-    color: #333;
-    margin-bottom: 10px;
-  }
-  
-  /* Description */
-  .newsletter-description {
-    font-size: 1.2rem;
-    color: #555;
-    margin-bottom: 30px;
-  }
-  
-  /* Signup Form */
-  .signup-form {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  /* Input Wrapper */
-  .input-wrapper {
-    display: flex;
-    width: 100%;
-    max-width: 500px;
-    position: relative;
-  }
-  
-  /* Email Input */
-  .email-input {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.1rem;
-    border: 2px solid #3498db;
-    border-radius: 30px 0 0 30px;
-    outline: none;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .email-input:focus {
-    border-color: #2980b9;
-    box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
-    outline: none;
-  }
-  
-  /* Subscribe Button */
-  .subscribe-btn {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 15px 25px;
-    border-radius: 0 30px 30px 0;
-    cursor: pointer;
-    font-size: 1.1rem;
-    transition: background-color 0.3s ease;
-  }
-  
-  .subscribe-btn:hover {
-    background-color: #2980b9;
-  }
-  
-  /* Fade In Animation */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
+    validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
     }
   }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .newsletter-title {
-      font-size: 2rem;
-    }
-    .newsletter-description {
-      font-size: 1rem;
-    }
-    .email-input {
-      font-size: 1rem;
-    }
-    .subscribe-btn {
-      font-size: 1rem;
-      padding: 15px 20px;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .signup-form {
-      flex-direction: column;
-    }
-  
-    .email-input {
-      border-radius: 30px;
-      margin-bottom: 15px;
-    }
-  
-    .subscribe-btn {
-      border-radius: 30px;
-      width: 100%;
-    }
-  }
-  </style>
-  
+};
+</script>
+
+<style scoped>
+/* Animation for form elements */
+[data-aos] {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+[data-aos="fade-up"] {
+  transform: translateY(20px);
+  opacity: 0;
+}
+[data-aos].aos-animate {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Custom animation for spin */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+</style>

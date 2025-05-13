@@ -1,149 +1,43 @@
 <template>
-    <section class="cta-section">
-      <div class="cta-container">
-        <!-- Title -->
-        <h2 class="cta-title">Ready to Start Learning?</h2>
-  
-        <!-- Description -->
-        <p class="cta-description">
-          Take the next step towards mastering Vue.js. Explore our courses and get started on your learning journey today!
-        </p>
-  
-        <!-- CTA Buttons -->
-        <div class="cta-buttons">
-          <router-link to="/courses" class="primary-btn">Browse Courses</router-link>
-          <button class="secondary-btn" @click="signUpNow">Sign Up Now</button>
-        </div>
-      </div>
-    </section>
-  </template>
-  
-  <script>
-  export default {
-    name: "CTASction",
-    methods: {
-      browseCourses() {
-        alert("Browse Courses clicked!");
+  <section class="py-16 px-4 bg-blue-500 text-white text-center flex justify-center items-center flex-col">
+    <div class="max-w-3xl w-full text-center space-y-6">
+      <!-- Title -->
+      <h2 class="text-4xl md:text-3xl sm:text-2xl font-bold text-white mb-4">
+        Ready to Start Learning?
+      </h2>
 
-        // Implement actual navigation to courses page
-      },
-      signUpNow() {
-        alert("Sign Up Now clicked!");
-        // Implement actual sign up flow
-      }
-    }
-  };
-  </script>
-  
-  <style scoped>
-  /* CTA Section Styling */
-  .cta-section {
-    padding: 60px 20px;
-    background-color: #3498db;
-    color: white;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-  }
-  
-  .cta-container {
-    max-width: 800px;
-    margin: 0 auto;
-    text-align: center;
-  }
-  
-  /* Title Styling */
-  .cta-title {
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-    color: white;
-  }
-  
-  /* Description Styling */
-  .cta-description {
-    font-size: 1.2rem;
-    margin-bottom: 30px;
-    line-height: 1.6;
-    color: #f0f8ff;
-  }
-  
-  /* Buttons Container */
-  .cta-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-  }
-  
-  /* Primary Button Styling */
-  .primary-btn {
-    background-color: #ffffff;
-    color: #3498db;
-    padding: 15px 30px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: transform 0.3s ease, background-color 0.3s ease;
-  }
-  
-  .primary-btn:hover {
-    background-color: #f8f9fa;
-    transform: translateY(-3px);
-  }
-  
-  /* Secondary Button Styling */
-  .secondary-btn {
-    background-color: #f39c12;
-    color: white;
-    padding: 15px 30px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: transform 0.3s ease, background-color 0.3s ease;
-  }
-  
-  .secondary-btn:hover {
-    background-color: #e67e22;
-    transform: translateY(-3px);
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .cta-title {
-      font-size: 2rem;
-    }
-  
-    .cta-description {
-      font-size: 1rem;
-    }
-  
-    .cta-buttons {
-      flex-direction: column;
-      gap: 15px;
-    }
-  
-    .primary-btn, .secondary-btn {
-      padding: 12px 20px;
-      font-size: 1rem;
+      <!-- Description -->
+      <p class="text-lg md:text-base text-blue-100 leading-relaxed mb-6">
+        Take the next step towards mastering Vue.js. Explore our courses and get started on your learning journey today!
+      </p>
+
+      <!-- CTA Buttons -->
+      <div class="flex flex-wrap justify-center gap-4">
+        <router-link
+          to="/courses"
+          class="bg-white text-blue-500 hover:bg-gray-100 font-semibold text-lg px-6 py-3 rounded-md shadow transition-transform transform hover:-translate-y-1"
+        >
+          Browse Courses
+        </router-link>
+        <button
+          class="bg-yellow-500 hover:bg-yellow-430 text-white font-semibold text-lg px-6 py-3 rounded-md shadow transition-transform transform hover:-translate-y-1"
+          @click="signUpNow"
+        >
+          Sign Up Now
+        </button>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script>
+export default {
+  name: "CTASection",
+  methods: {
+    signUpNow() {
+      alert("Sign Up Now clicked!");
+      // Implement actual sign up flow
     }
   }
-  
-  @media (max-width: 480px) {
-    .cta-title {
-      font-size: 1.75rem;
-    }
-  
-    .cta-description {
-      font-size: 0.9rem;
-    }
-  
-    .primary-btn, .secondary-btn {
-      font-size: 0.95rem;
-      padding: 10px 18px;
-    }
-  }
-  </style>
-  
+};
+</script>
