@@ -29,8 +29,9 @@
 
       <!-- Courses Grid -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div 
-          v-for="(course, index) in featuredCourses" 
+        <!-- Course Card -->
+        <div  
+          v-for="(course, index) in getFeaturedCourses" 
           :key="course.id"
           class="relative bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col"
           @mouseenter="hoveredCourse = index"
@@ -182,7 +183,7 @@ export default {
   },
   computed: {
     ...mapState('courses', ['loading', 'error', 'selectedCourse']),
-    ...mapGetters('courses', ['featuredCourses'])
+    ...mapGetters('courses', ['getFeaturedCourses'])
   },
   created() {
     this.fetchCourses()

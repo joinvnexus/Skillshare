@@ -14,7 +14,8 @@ const store = createStore({
     learningPaths,
     instructors,
     testimonials,
-    courses
+    courses,
+    
   }
 })
 
