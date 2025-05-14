@@ -101,7 +101,7 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="w-full lg:w-3/4">
+        <main id="course-listing" class="w-full lg:w-3/4">
           <!-- Sorting and Results Count -->
           <div class="flex flex-col sm:flex-row justify-between items-center mb-6" data-aos="fade-left">
             <p class="text-gray-600 mb-2 sm:mb-0">

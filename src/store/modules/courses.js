@@ -12,7 +12,8 @@ const state = {
   currentPage: 1,
   itemsPerPage: 9,
   popularCourses: [],
-  featuredCourses: []
+  featuredCourses: [],
+
 }
 
 const mutations = {
