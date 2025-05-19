@@ -92,26 +92,26 @@ import { mapState, mapGetters, mapActions } from 'vuex'
 
 export default {
   computed: {
-    ...mapState('courses', [
-      'searchQuery',
-      'selectedCategories',
-      'selectedLevels',
-      'priceRange'
-    ]),
-    ...mapGetters('courses', [
-      'allCategories',
-      'allLevels',
-      'hasFilters'
-    ])
+    ...mapState('filters', [
+    'searchQuery',
+    'selectedCategories',
+    'selectedLevels',
+    'priceRange'
+  ]),
+   ...mapGetters('filters', [
+     'allCategories',
+     'allLevels',
+     'hasFilters'
+   ])
   },
   methods: {
-    ...mapActions('courses', [
-      'updateSearchQuery',
-      'updateSelectedCategories',
-      'updateSelectedLevels',
-      'updatePriceRange',
-      'resetFilters'
-    ]),
+  ...mapActions('filters', [
+    'updateSearchQuery',
+    'updateSelectedCategories',
+    'updateSelectedLevels',
+    'updatePriceRange',
+    'resetFilters'
+  ]),
     handleSearchInput(e) {
       this.updateSearchQuery(e.target.value)
     },

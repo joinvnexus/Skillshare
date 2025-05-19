@@ -28,7 +28,6 @@ import PopularCourses from '@/components/PopularCourses.vue';
 
 
 
-
 </script>
 
 <style scoped>

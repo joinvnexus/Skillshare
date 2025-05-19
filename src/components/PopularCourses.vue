@@ -137,13 +137,14 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
- import CourseQuickView from './CourseQuickView.vue'
+import CourseQuickView from './CourseQuickView.vue'
 
 export default {
   name: 'PopularCourses',
-   components: { CourseQuickView },
+  components: { CourseQuickView },
   computed: {
-    ...mapState('courses', ['loading', 'error', 'selectedCourse']),
+    ...mapState('courses', ['loading', 'error']),
+    ...mapState('ui', ['selectedCourse']),
     ...mapGetters('courses', ['getPopularCourses']),
     popularCourses() {
       return this.getPopularCourses.slice(0, 4) // Show top 4 popular courses
@@ -151,7 +152,9 @@ export default {
   },
   methods: {
     ...mapActions('courses', [
-      'fetchCourses',
+      'fetchCourses'
+    ]),
+    ...mapActions('ui', [
       'openQuickView',
       'closeQuickView'
     ]),

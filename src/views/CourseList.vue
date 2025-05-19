@@ -12,21 +12,18 @@
 
       <div class="flex flex-col lg:flex-row gap-8">
         <SidebarFilters />
-        
+
         <main class="w-full lg:w-3/4">
           <!-- Sorting and Results Count -->
           <div class="flex flex-col sm:flex-row justify-between items-center mb-6" data-aos="fade-left">
             <p class="text-gray-600 mb-2 sm:mb-0">
-              <!-- Showing {{ paginatedCourses.length }} of {{ courseCount }} courses -->
+              Showing {{ paginatedCourses.length }} of {{ courseCount }} courses
               <span v-if="hasFilters" class="text-sm text-gray-500">(filtered)</span>
             </p>
             <div class="flex items-center">
               <span class="mr-2 text-gray-600">Sort by:</span>
-              <select
-                v-model="sortBy"
-                @change="updateSort"
-                class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+              <select v-model="sortBy" @change="updateSort"
+                class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="newest">Newest</option>
                 <option value="popular">Most Popular</option>
                 <option value="rated">Highest Rated</option>
@@ -36,18 +33,13 @@
             </div>
           </div>
           <!-- Default -->
-
           <LoadingSpinner v-if="loading" />
           <ErrorState v-else-if="error" :error="error" @retry="fetchCourses" />
           <NoResults v-else-if="courseCount === 0" @reset="resetFilters" />
           <CourseGrid v-else :courses="paginatedCourses" />
 
-          <Pagination
-            v-if="totalPages > 1 && !loading"
-            :current-page="currentPage"
-            :total-pages="totalPages"
-            @page-changed="changePage"
-          />
+          <!-- Pagination -->
+          <Pagination :current-page="currentPage" :total-pages="totalPages" @page-changed="changePage" />
         </main>
       </div>
     </div>
@@ -55,65 +47,75 @@
 </template>
 
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex'
-import AOS from 'aos'
-import 'aos/dist/aos.css'
+  import { mapState, mapGetters, mapActions } from 'vuex'
+  import AOS from 'aos'
+  import 'aos/dist/aos.css'
 
-// Import components
-import HeroSection from '@/components/Courses/HeroSection.vue'
-import SidebarFilters from '@/components/Courses/SidebarFilters.vue'
-import CourseGrid from '@/components/Courses/CourseGrid.vue'
-import Pagination from '@/components/Courses/Pagination.vue'
-import ErrorState from '@/components/Courses/ErrorState.vue'
-import NoResults from '@/components/Courses/NoResults.vue'
-import LoadingSpinner from '@/components/Courses/LoadingSpinner.vue'
+  // Import components
+  import HeroSection from '@/components/Courses/HeroSection.vue'
+  import SidebarFilters from '@/components/Courses/SidebarFilters.vue'
+  import CourseGrid from '@/components/Courses/CourseGrid.vue'
+  import Pagination from '@/components/Courses/Pagination.vue'
+  import ErrorState from '@/components/Courses/ErrorState.vue'
+  import NoResults from '@/components/Courses/NoResults.vue'
+  import LoadingSpinner from '@/components/Courses/LoadingSpinner.vue'
 
-export default {
-  components: {
-    HeroSection,
-    SidebarFilters,
-    CourseGrid,
-    Pagination,
-    ErrorState,
-    NoResults,
-    LoadingSpinner
-  }, 
-  computed: {
-    ...mapState('courses', [
-      'loading',
-      'error',
-      'sortBy',
-      'currentPage'
-    ]),
-    ...mapGetters('courses', [
-      'paginatedCourses',
-      'totalPages',
-      'courseCount',
-      'hasFilters'
-    ])
-  },
-  methods: {
-    ...mapActions('courses', [
-      'fetchCourses',
-      'updateSortBy',
-      'changePage',
-      'resetFilters'
-    ]),
-    updateSort(e) {
-      this.updateSortBy(e.target.value)
+  export default {
+    components: {
+      HeroSection,
+      SidebarFilters,
+      CourseGrid,
+      Pagination,
+      ErrorState,
+      NoResults,
+      LoadingSpinner
+    },
+    // Updated computed and methods
+    computed: {
+      ...mapState('ui', ['loading', 'error', 'currentPage']),
+      ...mapState('filters', ['sortBy']),
+      ...mapGetters('ui', ['paginatedCourses', 'totalPages', 'courseCount']),
+      ...mapGetters('filters', ['hasFilters']),
+      ...mapGetters('courses', ['allCategories']),
+    },
+
+    methods: {
+      ...mapActions('courses', ['fetchCourses']),
+      ...mapActions('filters', ['updateSortBy', 'resetFilters']),
+      ...mapActions('ui', ['changePage']),
+      updateSort(e) {
+        this.updateSortBy(e.target.value)
+      }
+    },
+    created() {
+      this.updateSortBy(this.sortBy)
+      this.fetchCourses()
+    },
+    // Initialize AOS on component mount
+    mounted() {
+
+      this.fetchCourses()
+      // Initialize AOS for animations
+      AOS.init({
+        duration: 800,
+        once: true,
+        easing: 'ease-in-out',
+        offset: 10,
+        delay: 100
+      })
+    },
+    watch: {
+
+      '$store.state.ui.loading': function (newVal) {
+        if (newVal) {
+          AOS.refresh()
+        }
+      },
+      '$store.state.ui.error': function (newVal) {
+        if (newVal) {
+          AOS.refresh()
+        }
+      }
     }
-  },
-  created() {
-    this.fetchCourses()
-  },
-  mounted() {
-    AOS.init({
-      duration: 800,
-      once: true,
-      easing: 'ease-in-out',
-      offset: 10,
-      delay: 100
-    })
   }
-}
 </script>

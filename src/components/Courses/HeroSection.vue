@@ -57,28 +57,29 @@ export default {
       ]
     }
   },
+
   computed: {
-    ...mapGetters('courses', ['allCategories']),
-    allCategories() {
-      return ['All', ...this.$store.getters['courses/allCategories']]
-    }
-  },
+  allCategories() {
+    return ['All', ...this.$store.getters['filters/allCategories']]
+  }
+},
   methods: {
-    ...mapActions('courses', ['updateSelectedCategories', 'filterCourses']),
+  ...mapActions('filters', ['updateSelectedCategories', 'filterCourses']),
+  
+  filterCourses(category) {
+    this.activeCategory = category
+    const categories = category === 'All' ? [] : [category]
+    this.updateSelectedCategories(categories)
+    this.$store.dispatch('filters/filterCourses')
     
-    filterCourses(category) {
-      this.activeCategory = category
-      const categories = category === 'All' ? [] : [category]
-      this.updateSelectedCategories(categories)
-      this.$store.dispatch('courses/filterCourses')
-      
-      // Smooth scroll to course listing
-      const courseSection = document.getElementById('course-listing')
-      if (courseSection) {
-        courseSection.scrollIntoView({ behavior: 'smooth' })
-      }
+    // Smooth scroll to course listing
+    const courseSection = document.getElementById('course-listing')
+    if (courseSection) {
+      courseSection.scrollIntoView({ behavior: 'smooth' })
     }
   }
+}
+ 
 }
 </script>
 

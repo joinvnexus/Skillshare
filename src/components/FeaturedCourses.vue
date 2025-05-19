@@ -29,7 +29,6 @@
 
       <!-- Courses Grid -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Course Card -->
         <div  
           v-for="(course, index) in getFeaturedCourses" 
           :key="course.id"
@@ -67,7 +66,6 @@
               <span class="text-gray-600">{{ course.rating }} ({{ course.students }} students)</span>
             </div>
             <p class="text-gray-600 mb-4">{{ course.description }}</p>
-            
           </div>
 
           <!-- Quick View Overlay -->
@@ -88,13 +86,13 @@
       </div>
     </div>
 
-        <!-- Quick View Modal -->
-        <CourseQuickView
-          v-if="selectedCourse"
-          @close="selectedCourse = null"
-          :course="selectedCourse"
-          @enroll="handleEnrollment"
-        />
+    <!-- Quick View Modal -->
+    <CourseQuickView
+      v-if="selectedCourse"
+      :course="selectedCourse"
+      @close="closeQuickView"
+      @enroll="enrollCourse"
+    />
   </section>
 </template>
 
@@ -109,25 +107,24 @@ export default {
   },
   data() {
     return {
-      hoveredCourse: null,
-      selectedCourse: null
+      hoveredCourse: null
     }
   },
   computed: {
-    ...mapState('courses', ['loading', 'error', 'selectedCourse']),
+    ...mapState('ui', ['loading', 'error']),
+    ...mapState('ui', ['selectedCourse']),
     ...mapGetters('courses', ['getFeaturedCourses'])
   },
   created() {
     this.fetchCourses()
   },
   methods: {
-    ...mapActions('courses', ['fetchCourses', 'openQuickView', 'closeQuickView']),
-   
+    ...mapActions('courses', ['fetchCourses']),
+    ...mapActions('ui', ['openQuickView', 'closeQuickView']),
     enrollCourse(course) {
       // Implement enrollment logic
       console.log('Enrolling in:', course.title)
       this.closeQuickView()
-      // In a real app, you might navigate to a checkout page or show a signup modal
     }
   }
 }
