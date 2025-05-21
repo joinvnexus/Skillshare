@@ -51,7 +51,7 @@
                 type="text"
                 placeholder="Search courses..."
                 class="py-2 px-4 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            @keyup.enter="performSearch"
+                @keyup.enter="performSearch"
           >
           <button 
             @click="performSearch"
@@ -123,11 +123,12 @@
         <!-- Mobile Search -->
         <div class="relative mb-4">
           <input 
+            :value="searchQuery"
+            @input="handleSearchInput"
+            @keyup.enter="performSearch"
             type="text" 
             placeholder="Search courses..." 
-            v-model="searchQuery"
             class="w-full py-2 px-4 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            @keyup.enter="performSearch"
           >
           <button 
             @click="performSearch"
@@ -189,6 +190,21 @@
         </router-link>
       </div>
     </div>
+
+    
+    <!-- Search Suggestions -->
+<div class="absolute left-0 right-0 bg-white border rounded shadow z-50" v-if="showSuggestions && suggestions.length">
+  <ul>
+    <li
+      v-for="course in suggestions"
+      :key="course.id"
+      @click="goToCourse(course.id)"
+      class="px-4 py-2 hover:bg-blue-100 cursor-pointer"
+    >
+      {{ course.title }}
+    </li>
+  </ul>
+</div>
   </header>
 </template>
 
@@ -198,10 +214,12 @@ import { ref } from 'vue';
 export default {
   data() {
     return {
-      searchQuery: '',
+     // searchQuery: '',
       showSearch: false,
       showDropdown: false,
       isMobileMenuOpen: false,
+      //showSuggestions: false,
+      //suggestions: [],
     };
   },
   computed: {
@@ -210,17 +228,16 @@ export default {
   methods: {
     handleSearchInput(event) {
       this.searchQuery = event.target.value;
+      // this.updateSuggestions();
     },
     performSearch() {
-      // Handle search functionality
-      console.log('Searching for:', this.searchQuery);
-      this.searchQuery = '';
-    },
-    performSearch() {
-      // Handle search functionality
-      console.log('Searching for:', this.searchQuery);
-      this.updateSearchQuery(this.searchQuery);
-      this.searchQuery = '';
+    if (!this.searchQuery.trim()) return;
+    // Dispatch to Vuex (optional)
+    this.$store.dispatch('filters/updateSearchQuery', this.searchQuery);
+    // Navigate to search results page with query as route param
+    this.$router.push({ name: 'SearchResults', query: { q: this.searchQuery } });
+    this.searchQuery = '';
+    console.log('Search performed:', this.searchQuery);
     },
     toggleDropdown() {
       this.showDropdown = !this.showDropdown;

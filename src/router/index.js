@@ -45,6 +45,12 @@ const router = createRouter({
       component: () => import('@/views/learning-paths/Advanced.vue'),
       meta: { title: 'Advanced Learning Path' }
     },
+    {
+      path: '/search',
+      name: 'SearchResults',
+      component: () => import('@/views/SearchResults.vue')
+    }
+
   ]
 })
 
