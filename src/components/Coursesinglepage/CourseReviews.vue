@@ -1,53 +1,94 @@
 <template>
-  <div class="course-reviews">
-    <h2>Student Reviews</h2>
+  <div class="course-reviews space-y-8">
+    <!-- Title -->
+    <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Student Reviews</h2>
     
-    <div class="rating-overview">
-      <div class="average-rating">
-        <div class="score">{{ rating.toFixed(1) }}</div>
-        <div class="stars">
-          <i v-for="i in 5" :key="i" :class="['fas fa-star', { 'filled': i <= Math.round(rating) }]"></i>
+    <!-- Rating Overview -->
+    <div class="rating-overview flex flex-col md:flex-row gap-6 md:gap-12 pb-8 border-b border-gray-200">
+      <!-- Average Rating -->
+      <div class="average-rating flex flex-col items-center w-full md:w-auto">
+        <div class="score text-5xl font-bold text-blue-600 leading-none">{{ rating.toFixed(1) }}</div>
+        <div class="stars flex gap-1 my-3">
+          <i 
+            v-for="i in 5" 
+            :key="i" 
+            class="fas fa-star text-lg"
+            :class="{
+              'text-yellow-400': i <= Math.round(rating),
+              'text-gray-300': i > Math.round(rating)
+            }"
+          ></i>
         </div>
-        <div class="count">Based on {{ reviews.length }} reviews</div>
+        <div class="count text-gray-500 text-sm">Based on {{ reviews.length }} reviews</div>
       </div>
       
-      <div class="rating-bars">
-        <div class="bar" v-for="n in 5" :key="`bar-${n}`">
-          <div class="star-count">
-            <span>{{ n }} star</span>
-            <div class="bar-container">
-              <div class="bar-fill" :style="{ width: `${getStarPercentage(n)}%` }"></div>
+      <!-- Rating Bars -->
+      <div class="rating-bars flex-1 space-y-3 w-full">
+        <div 
+          class="bar" 
+          v-for="n in 5" 
+          :key="`bar-${n}`"
+        >
+          <div class="star-count flex items-center gap-3">
+            <span class="text-gray-600 text-sm w-12">{{ n }} star</span>
+            <div class="bar-container flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                class="bar-fill h-full bg-blue-500 rounded-full" 
+                :style="{ width: `${getStarPercentage(n)}%` }"
+              ></div>
             </div>
-            <span>{{ getStarCount(n) }}</span>
+            <span class="text-gray-500 text-sm w-12 text-right">{{ getStarCount(n) }}</span>
           </div>
         </div>
       </div>
     </div>
     
-    <div class="reviews-list">
-      <div class="review" v-for="review in reviews" :key="review.id">
-        <div class="review-header">
-          <div class="avatar">
-            <img :src="review.avatar" :alt="review.name">
+    <!-- Reviews List -->
+    <div class="reviews-list space-y-6">
+      <div 
+        class="review py-6 border-b border-gray-200 last:border-b-0"
+        v-for="review in reviews" 
+        :key="review.id"
+      >
+        <div class="review-header flex gap-4 mb-4">
+          <div class="avatar w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow">
+            <img 
+              :src="review.avatar" 
+              :alt="review.name"
+              class="w-full h-full object-cover"
+            >
           </div>
           <div class="info">
-            <h4>{{ review.name }}</h4>
-            <div class="meta">
-              <div class="stars">
-                <i v-for="i in 5" :key="i" :class="['fas fa-star', { 'filled': i <= review.rating }]"></i>
+            <h4 class="font-medium text-gray-800">{{ review.name }}</h4>
+            <div class="meta flex items-center flex-wrap gap-2 mt-1">
+              <div class="stars flex gap-1">
+                <i 
+                  v-for="i in 5" 
+                  :key="i" 
+                  class="fas fa-star text-sm"
+                  :class="{
+                    'text-yellow-400': i <= review.rating,
+                    'text-gray-300': i > review.rating
+                  }"
+                ></i>
               </div>
-              <span class="date">{{ review.date }}</span>
+              <span class="text-gray-500 text-xs">{{ review.date }}</span>
             </div>
           </div>
         </div>
         <div class="review-content">
-          <h5>{{ review.title }}</h5>
-          <p>{{ review.content }}</p>
+          <h5 class="font-semibold text-gray-800 mb-2">{{ review.title }}</h5>
+          <p class="text-gray-600 leading-relaxed">{{ review.content }}</p>
         </div>
       </div>
     </div>
     
-    <button class="btn btn-load-more" v-if="reviews.length < totalReviews">
+    <!-- Load More Button -->
+    <button 
+      v-if="reviews.length < totalReviews"
+      class="btn-load-more mx-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      @click="$emit('load-more')"
+    >
       Load More Reviews
     </button>
   </div>
@@ -127,150 +168,43 @@ export default {
 </script>
 
 <style scoped>
-.course-reviews h2 {
-  font-size: 1.8rem;
-  margin-bottom: 30px;
+/* Animation for stars on hover */
+.stars:hover i.text-yellow-400 {
+  animation: pulse 0.5s ease;
 }
 
-.rating-overview {
-  display: flex;
-  gap: 50px;
-  margin-bottom: 40px;
-  padding-bottom: 30px;
-  border-bottom: 1px solid #e0e0e0;
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
 
-.average-rating {
-  text-align: center;
-  flex: 0 0 150px;
-}
-
-.score {
-  font-size: 3rem;
-  font-weight: 700;
-  color: #4e6bff;
-  line-height: 1;
-}
-
-.stars {
-  margin: 10px 0;
-}
-
-.stars i {
-  color: #ffc107;
-}
-
-.count {
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.rating-bars {
-  flex: 1;
-}
-
-.bar {
-  margin-bottom: 10px;
-}
-
-.star-count {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.star-count span {
-  min-width: 50px;
-  font-size: 0.9rem;
-}
-
-.bar-container {
-  flex: 1;
-  height: 8px;
-  background: #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
+/* Animation for bar fill */
 .bar-fill {
-  height: 100%;
-  background: #4e6bff;
+  transition: width 1s ease-out;
 }
 
-.reviews-list {
-  margin-bottom: 30px;
-}
-
+/* Animation for review cards */
 .review {
-  padding: 20px 0;
-  border-bottom: 1px solid #e0e0e0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.review-header {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 15px;
+.review:hover {
+  transform: translateY(-2px);
 }
 
-.avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-.avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.info h4 {
-  margin: 0 0 5px;
-  font-size: 1rem;
-}
-
-.meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.meta .stars i {
-  font-size: 0.8rem;
-  color: #ffc107;
-}
-
-.date {
-  font-size: 0.8rem;
-  color: #666;
-}
-
-.review-content h5 {
-  margin: 0 0 10px;
-  font-size: 1rem;
-}
-
-.review-content p {
-  margin: 0;
-  line-height: 1.6;
-  color: #333;
-}
-
-.btn-load-more {
-  display: block;
-  margin: 30px auto 0;
-  padding: 12px 30px;
-  background: #4e6bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.btn-load-more:hover {
-  background: #3a56d4;
+/* Responsive adjustments */
+@media (max-width: 400px) {
+  .rating-overview {
+    gap: 1.5rem;
+  }
+  
+  .star-count {
+    gap: 0.5rem;
+  }
+  
+  .star-count span {
+    min-width: 2.5rem;
+  }
 }
 </style>

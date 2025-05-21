@@ -1,38 +1,45 @@
 <template>
-  <div class="course-detail">
-    <div v-if="loading" class="loading-spinner">
+  <div class="course-detail bg-gray-50 min-h-screen">
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-spinner flex items-center justify-center min-h-[300px]">
       <LoadingSpinner />
     </div>
     
-    <div v-else-if="error" class="error-message">
+    <!-- Error State -->
+    <div v-else-if="error" class="error-message flex items-center justify-center min-h-[300px]">
       <ErrorMessage :message="error" />
     </div>
     
+    <!-- Course Content -->
     <template v-else-if="course">
       <!-- Hero Section -->
       <CourseHero 
         :course="course"
+        :description="course.description"
         @enroll="handleEnroll"
       />
       
       <!-- Main Content -->
-      <div class="course-content">
-        <div class="container">
-          <div class="row">
-            <!-- Left Column -->
-            <div class="col-lg-8">
+      <div class="course-content py-10 md:py-16">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Left Column - Main Content -->
+            <div class="w-full lg:w-8/12">
               <CourseTabs 
                 :course="course"
                 :activeTab="activeTab"
                 @tab-change="changeTab"
               />
               
-              <div class="tab-content">
+              <div class="tab-content py-8">
                 <!-- Overview Tab -->
                 <CourseOverview 
                   v-if="activeTab === 'overview'"
                   :description="course.fullDescription"
                   :features="course.features"
+                  :duration="course.duration"
+                  :lessons="course.lessons"
+                  :level="course.level"
                 />
                 
                 <!-- Curriculum Tab -->
@@ -40,6 +47,7 @@
                   v-if="activeTab === 'curriculum'"
                   :lessons="course.lessons"
                   :duration="course.duration"
+                  :sections="course.sections"
                 />
                 
                 <!-- Instructor Tab -->
@@ -47,6 +55,10 @@
                   v-if="activeTab === 'instructor'"
                   :instructor="course.instructor"
                   :otherCourses="instructorCourses"
+                  :students="course.students"
+                  :coursesCount="instructorCourses.length + 1"
+                  :reviews="course.reviews"
+                  :bio="course.instructorBio"
                 />
                 
                 <!-- Reviews Tab -->
@@ -58,21 +70,24 @@
               </div>
             </div>
             
-            <!-- Right Column (Sidebar) -->
-            <div class="col-lg-4">
-              <CourseSidebar 
-                :course="course"
-                @enroll="handleEnroll"
-              />
+            <!-- Right Column - Sidebar -->
+            <div class="w-full lg:w-4/12">
+              <div class="sticky top-6 space-y-6">
+                <CourseSidebar 
+                  :course="course"
+                  @enroll="handleEnroll"
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
       
       <!-- Related Courses -->
-      <RelatedCourses 
-        :courses="relatedCourses"
-      />
+      <div class="pb-16 bg-white">
+           <RelatedCourses :current-course-id="currentCourse.id" />
+
+      </div>
     </template>
   </div>
 </template>
@@ -110,6 +125,9 @@ export default {
     }
   },
   computed: {
+    currentCourse() {
+      return this.$store.state.courses.currentCourse
+    },
     ...mapState('courses', [
       'currentCourse',
       'relatedCourses',
@@ -125,6 +143,9 @@ export default {
       return this.allCourses.filter(c => 
         c.instructor === this.course.instructor && c.id !== this.course.id
       ).slice(0, 3)
+    },
+    instructorBio() {
+      return this.course.instructorBio || 'This instructor has not provided a bio.'
     }
   },
   methods: {
@@ -137,34 +158,29 @@ export default {
       console.log('Enrolling in course:', this.course.id)
     }
   },
-  async created() {
+  created() {
     const courseId = parseInt(this.$route.params.id)
-    await this.fetchCourseById(courseId)
-    if (this.course) {
-      await this.fetchRelatedCourses(this.course.tags)
-    }
+    this.fetchCourseById(courseId).then(() => {
+      console.log('Loaded course:', this.course)
+      if (this.course) {
+        // bthis.fetchCourseById(this.course.tags)
+      }
+    })
   }
 }
 </script>
 
 <style scoped>
+/* You can keep your custom styles here if needed, but most are replaced with Tailwind */
 .course-detail {
-  padding-bottom: 60px;
+  /* Additional styles that might not be covered by Tailwind */
 }
 
-.loading-spinner,
-.error-message {
-  min-height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.course-content {
-  padding: 40px 0;
-}
-
-.tab-content {
-  padding: 30px 0;
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .course-content {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
 }
 </style>

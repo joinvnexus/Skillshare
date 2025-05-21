@@ -45,15 +45,28 @@ const actions = {
   fetchCourseById({ commit, state }, courseId) {
     const course = state.allCourses.find(c => c.id === courseId)
     commit('SET_CURRENT_COURSE', course)
-    // You might want to add logic to fetch related courses here
+      // Example: Find related courses by category (excluding the current course)
+      if(course && course.category){
+        const relatedCourses = state.allCourses.filter(
+          c => c.category === course.category && c.id !== courseId).slice(0, 4) // ← Limit to 4 here
+        
+        commit('SET_RELATED_COURSES', relatedCourses)
+      }else{
+        commit('SET_RELATED_COURSES', [])
+      }
+
     return course
-  }
+  },
+
+
 }
 
 const getters = {
   getPopularCourses: state => state.popularCourses,
   getFeaturedCourses: state => state.featuredCourses.slice(0, 3),
-  getCourseById: state => id => state.allCourses.find(course => course.id === id)
+  getCourseById: state => id => state.allCourses.find(course => course.id === id),
+  relatedCourses: state => state.relatedCourses // <-- Add this line
+
 }
 
 export default {

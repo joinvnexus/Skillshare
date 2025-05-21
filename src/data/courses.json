@@ -17,7 +17,17 @@
     "level": "Beginner to Advanced",
     "isPopular": true,
     "isFeatured": true,
-    "createdAt": "2023-01-15"
+    "createdAt": "2023-01-15",
+    "Language": "English",
+    "certificate": "Yes",
+    "features": [
+      "Master Vue.js fundamentals",
+      "Build real-world applications",
+      "Learn state management with Vuex",
+      "Implement routing with Vue Router",
+      "Create reusable components",
+      "Understand best practices"
+    ]
   },
   {
     "id": 2,
@@ -63,6 +73,7 @@
     "id": 4,
     "title": "Vue Router: From Basics to Advanced",
     "instructor": "Emma Wilson",
+    "category": "Web Development",
     "description": "Learn how to navigate and structure your Vue.js apps with Vue Router.",
     "rating": 4.5,
     "price": 125,
@@ -82,6 +93,12 @@
     "id": 5,
     "title": "Building Single Page Applications with Vue.js",
     "instructor": "Sophia Green",
+    "category": "Web Development",
+    "instructorBio": "Sophia is a seasoned web developer with a passion for building dynamic user interfaces.",
+    "instructorImage": "/images/instructors/sophia-green.jpg",
+    "instructorRating": 4.8,
+    "instructorReviews": 3256, 
+    "instructorCoursesCount": 8,
     "description": "Create powerful SPAs using the best practices in Vue.js.",
     "rating": 4.8,
     "price": 175,
@@ -95,12 +112,59 @@
     "level": "Advanced",
     "isPopular": false,
     "isFeatured": true,
-    "createdAt": "2023-05-18"
+    "createdAt": "2023-05-18",
+    "Language": "English",
+    "certificate": "Yes",
+    "features": [
+      "Hands-on projects",
+      "Real-world examples",
+      "Lifetime access",
+      "Certificate of completion",
+      "Community support",
+      "Mobile-friendly"
+    ],
+    "prerequisites": [
+      "Basic knowledge of HTML, CSS, and JavaScript",
+      "Familiarity with Vue.js fundamentals"
+    ],
+    "sections": [
+      {
+        "title": "Introduction to SPAs",
+        "duration": "1 hour",
+        "lessons": [
+          { "title": "What is a SPA?", "duration": "20 min", "type": "video" },
+          { "title": "Benefits of SPAs", "duration": "15 min", "type": "video" }
+        ]
+      },
+      {
+        "title": "Setting Up the Project",
+        "duration": "2 hours",
+        "lessons": [
+          { "title": "Vue CLI Basics", "duration": "30 min", "type": "video" },
+          { "title": "Project Structure", "duration": "45 min", "type": "video" }
+        ]
+      }
+    ],
+    "instructorOtherCourses": [
+      {
+        "title": "Vue.js for Beginners",
+        "duration": "8 hours",
+        "lessons": 30,
+        "description": "A beginner-friendly course to get started with Vue.js."
+      },
+      {
+        "title": "Advanced Vue.js Patterns",
+        "duration": "10 hours",
+        "lessons": 35,
+        "description": "Explore advanced patterns and techniques in Vue.js development."
+      }
+    ]
   },
   {
     "id": 6,
     "title": "Vue.js and REST APIs",
     "instructor": "Chris Lee",
+    "category": "Web Development",
     "description": "Learn how to integrate Vue.js with RESTful APIs to build dynamic apps.",
     "rating": 4.3,
     "price": 120,
@@ -119,7 +183,8 @@
   {
     "id": 7,
     "title": "Creating Reusable Components in Vue.js",
-    "instructor": "Olivia White",
+    "instructor": "Olivia White",  
+    "category": "Web Development", 
     "description": "Build and organize reusable components for efficient development.",
     "rating": 4.6,
     "price": 140,
@@ -129,7 +194,7 @@
     "descriptionExtended": "Master component composition and reusability patterns in Vue.js.",
     "fullDescription": "Learn how to design and build truly reusable Vue components that can be shared across projects. This course covers slots, props validation, component communication patterns, and building component libraries.",
     "image": "/images/courses/reusable-components.jpg",
-    "tags": ["Vue.js", "Components", "Frontend", "Web Development"],
+    "tags": ["Vue.js", "JavaScript", "Web Development", "Frontend"],
     "level": "Beginner to Intermediate",
     "isPopular": true,
     "isFeatured": false,
@@ -139,6 +204,7 @@
     "id": 8,
     "title": "Testing Vue.js Applications",
     "instructor": "Liam Johnson",
+    "category": "Web Development",
     "description": "Master testing techniques for Vue.js apps, from unit tests to end-to-end testing.",
     "rating": 4.7,
     "price": 160,
@@ -158,6 +224,7 @@
     "id": 9,
     "title": "Vue.js Animations and Transitions",
     "instructor": "Emily Davis",
+    "category": "Web Development",
     "description": "Add beautiful animations and transitions to your Vue.js applications.",
     "rating": 4.4,
     "price": 110,
@@ -177,6 +244,7 @@
     "id": 10,
     "title": "Fullstack Vue.js with Node.js and Express",
     "instructor": "David Harris",
+    "category": "Web Development",
     "description": "Build fullstack applications using Vue.js, Node.js, and Express.",
     "rating": 4.9,
     "price": 250,
@@ -190,6 +258,18 @@
     "level": "Advanced",
     "isPopular": true,
     "isFeatured": true,
-    "createdAt": "2023-05-30"
+    "createdAt": "2023-05-30",
+    "Language": "English",
+    "certificate": "Yes",
+    "sections": [
+      {
+        "title": "Backend Setup",
+        "duration": "3 hours",
+        "lessons": [
+          { "title": "Node.js Fundamentals", "duration": "45 min", "type": "video" },
+          { "title": "Express Server Setup", "duration": "30 min", "type": "video" }
+        ]
+      }
+    ]
   }
 ]

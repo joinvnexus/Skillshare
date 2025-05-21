@@ -1,32 +1,73 @@
 <template>
-  <div class="course-curriculum">
-    <h2>Course Curriculum</h2>
-    <p>{{ lessons }} lessons • {{ duration }}</p>
-    
-    <div class="accordion">
-      <div class="accordion-item" v-for="(section, index) in sections" :key="index">
-        <button 
-          class="accordion-header"
-          :class="{ active: activeSection === index }"
+  <div class="course-curriculum space-y-4">
+    <!-- Header -->
+    <div>
+      <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Course Curriculum</h2>
+      <p class="text-gray-600">{{ lessons }} lessons • {{ duration }}</p>
+    </div>
+
+    <!-- Accordion -->
+    <div class="accordion border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+      <div 
+        class="accordion-item border-b border-gray-200 last:border-b-0"
+        v-for="(section, index) in sections" 
+        :key="index"
+      >
+        <!-- Accordion Header -->
+        <button
+          class="accordion-header w-full px-4 py-4 md:px-6 md:py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-left transition-colors duration-200"
+          :class="{
+            'bg-blue-600 text-white': activeSection === index,
+            'bg-gray-50 hover:bg-gray-100': activeSection !== index
+          }"
           @click="toggleSection(index)"
         >
-          <div class="section-title">
-            <i class="fas" :class="activeSection === index ? 'fa-minus' : 'fa-plus'"></i>
-            <span>{{ section.title }}</span>
+          <div class="section-title flex items-center gap-3">
+            <i 
+              class="fas text-sm transition-transform duration-300"
+              :class="{
+                'fa-minus': activeSection === index,
+                'fa-plus': activeSection !== index,
+                'text-white': activeSection === index,
+                'text-gray-500': activeSection !== index
+              }"
+            ></i>
+            <span class="font-medium">{{ section.title }}</span>
           </div>
-          <div class="section-meta">
-            <span>{{ section.lessons.length }} lessons • {{ section.duration }}</span>
+          <div 
+            class="section-meta text-sm"
+            :class="{
+              'text-blue-100': activeSection === index,
+              'text-gray-500': activeSection !== index
+            }"
+          >
+            {{ section.lessons.length }} lessons • {{ section.duration }}
           </div>
         </button>
         
-        <div class="accordion-content" v-show="activeSection === index">
-          <ul>
-            <li v-for="(lesson, lessonIndex) in section.lessons" :key="lessonIndex">
-              <div class="lesson">
-                <i class="far" :class="lesson.type === 'video' ? 'fa-play-circle' : 'fa-file-alt'"></i>
-                <span>{{ lesson.title }}</span>
-                <span class="duration">{{ lesson.duration }}</span>
-              </div>
+        <!-- Accordion Content -->
+        <div 
+          class="accordion-content bg-white overflow-hidden transition-all duration-300 ease-in-out"
+          :class="{
+            'max-h-0': activeSection !== index,
+            'max-h-[1000px]': activeSection === index
+          }"
+        >
+          <ul class="px-4 py-2 md:px-6 md:py-3 space-y-3">
+            <li 
+              v-for="(lesson, lessonIndex) in section.lessons" 
+              :key="lessonIndex"
+              class="lesson py-3 border-b border-gray-100 last:border-b-0 flex items-center gap-4 hover:bg-gray-50 px-2 rounded transition-colors duration-150"
+            >
+              <i 
+                class="far flex-shrink-0 text-lg"
+                :class="{
+                  'fa-play-circle text-blue-500': lesson.type === 'video',
+                  'fa-file-alt text-green-500': lesson.type !== 'video'
+                }"
+              ></i>
+              <span class="flex-1 text-gray-700">{{ lesson.title }}</span>
+              <span class="duration text-sm text-gray-500">{{ lesson.duration }}</span>
             </li>
           </ul>
         </div>
@@ -46,44 +87,15 @@ export default {
     duration: {
       type: String,
       required: true
+    },
+    sections: {
+      type: Array,
+      required: true
     }
   },
   data() {
     return {
-      activeSection: 0,
-      sections: [
-        {
-          title: 'Getting Started with Vue.js',
-          duration: '2 hours',
-          lessons: [
-            { title: 'Introduction to Vue.js', duration: '15 min', type: 'video' },
-            { title: 'Setting Up Your Environment', duration: '20 min', type: 'video' },
-            { title: 'Vue Instance and Data Binding', duration: '25 min', type: 'video' },
-            { title: 'Exercise: Your First Vue App', duration: '30 min', type: 'file' },
-            { title: 'Quiz: Vue Basics', duration: '10 min', type: 'file' }
-          ]
-        },
-        {
-          title: 'Components and Templates',
-          duration: '3 hours',
-          lessons: [
-            { title: 'Understanding Components', duration: '20 min', type: 'video' },
-            { title: 'Component Communication', duration: '25 min', type: 'video' },
-            { title: 'Slots and Dynamic Components', duration: '30 min', type: 'video' },
-            { title: 'Exercise: Building a Component Library', duration: '45 min', type: 'file' }
-          ]
-        },
-        {
-          title: 'State Management with Vuex',
-          duration: '4 hours',
-          lessons: [
-            { title: 'Introduction to State Management', duration: '20 min', type: 'video' },
-            { title: 'Vuex Core Concepts', duration: '30 min', type: 'video' },
-            { title: 'Modules and Namespacing', duration: '25 min', type: 'video' },
-            { title: 'Exercise: Implementing Vuex', duration: '1 hour', type: 'file' }
-          ]
-        }
-      ]
+      activeSection: 0
     }
   },
   methods: {
@@ -95,98 +107,33 @@ export default {
 </script>
 
 <style scoped>
-.course-curriculum h2 {
-  font-size: 1.8rem;
-  margin-bottom: 10px;
-}
-
-.course-curriculum > p {
-  color: #666;
-  margin-bottom: 30px;
-}
-
-.accordion {
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.accordion-item {
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.accordion-item:last-child {
-  border-bottom: none;
-}
-
-.accordion-header {
-  width: 100%;
-  padding: 15px 20px;
-  background: #f9f9f9;
-  border: none;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.accordion-header:hover {
-  background: #f0f0f0;
-}
-
-.accordion-header.active {
-  background: #4e6bff;
-  color: white;
-}
-
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.section-meta {
-  font-size: 0.9rem;
-}
-
+/* Smooth accordion animation */
 .accordion-content {
-  padding: 20px;
-  background: white;
+  transition: max-height 0.3s ease-in-out;
 }
 
-.accordion-content ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* Pulse animation for plus/minus icons */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
-.accordion-content li {
-  padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
+.accordion-header:hover .fa-plus,
+.accordion-header:hover .fa-minus {
+  animation: pulse 0.5s ease;
 }
 
-.accordion-content li:last-child {
-  border-bottom: none;
-}
-
-.lesson {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.lesson i {
-  width: 20px;
-  color: #666;
-}
-
-.lesson span {
-  flex: 1;
-}
-
-.duration {
-  color: #666;
-  font-size: 0.9rem;
+/* Responsive adjustments */
+@media (max-width: 400px) {
+  .lesson {
+    flex-wrap: wrap;
+    gap: 2px;
+    padding-bottom: 12px;
+  }
+  
+  .duration {
+    margin-left: auto;
+  }
 }
 </style>

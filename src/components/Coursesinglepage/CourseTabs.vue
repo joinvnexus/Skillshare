@@ -1,13 +1,27 @@
 <template>
   <div class="course-tabs">
-    <ul class="nav nav-tabs">
-      <li class="nav-item" v-for="tab in tabs" :key="tab.id">
+    <ul class="nav-tabs flex overflow-x-auto whitespace-nowrap scrollbar-hide">
+      <li 
+        class="nav-item flex-shrink-0" 
+        v-for="tab in tabs" 
+        :key="tab.id"
+      >
         <button 
-          class="nav-link" 
-          :class="{ active: activeTab === tab.id }"
+          class="nav-link px-4 py-3 md:px-6 md:py-4 text-sm md:text-base font-medium relative transition-all duration-200"
+          :class="{
+            'text-blue-600': activeTab === tab.id,
+            'text-gray-600 hover:text-gray-800': activeTab !== tab.id
+          }"
           @click="$emit('tab-change', tab.id)"
         >
           {{ tab.label }}
+          <span 
+            class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 transition-all duration-200"
+            :class="{
+              'scale-x-100': activeTab === tab.id,
+              'scale-x-0': activeTab !== tab.id
+            }"
+          ></span>
         </button>
       </li>
     </ul>
@@ -25,11 +39,10 @@ export default {
     activeTab: {
       type: String,
       default: 'overview'
-    }
-  },
-  data() {
-    return {
-      tabs: [
+    },
+    tabs: {
+      type: Array,
+      default: () => [
         { id: 'overview', label: 'Overview' },
         { id: 'curriculum', label: 'Curriculum' },
         { id: 'instructor', label: 'Instructor' },
@@ -41,34 +54,24 @@ export default {
 </script>
 
 <style scoped>
-.nav-tabs {
-  border-bottom: 1px solid #e0e0e0;
-  display: flex;
-  gap: 5px;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
-.nav-item {
-  margin-bottom: -1px;
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.nav-tabs {
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .nav-link {
-  padding: 12px 20px;
-  border: none;
-  background: none;
-  color: #555;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  border-bottom: 3px solid transparent;
+  border-bottom: 2px solid transparent;
 }
 
-.nav-link:hover {
-  color: #4e6bff;
-  border-bottom-color: #e0e0e0;
-}
-
-.nav-link.active {
-  color: #4e6bff;
-  border-bottom-color: #4e6bff;
+.nav-link:hover:not(.active) {
+  border-bottom-color: #e5e7eb;
 }
 </style>

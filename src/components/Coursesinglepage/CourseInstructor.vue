@@ -1,46 +1,80 @@
 <template>
-  <div class="course-instructor">
-    <h2>About the Instructor</h2>
+  <div class="course-instructor space-y-8 md:space-y-12">
+    <!-- Section Title -->
+    <h2 class="text-2xl md:text-3xl font-bold text-gray-800">About the Instructor</h2>
     
-    <div class="instructor-profile">
-      <div class="avatar">
-        <img :src="instructorImage" :alt="instructor">
+    <!-- Instructor Profile -->
+    <div class="instructor-profile flex flex-col md:flex-row gap-6 md:gap-8">
+      <!-- Avatar -->
+      <div class="avatar flex-shrink-0 w-32 h-32 md:w-40 md:h-40">
+        <img 
+          :src="instructorImage" 
+          :alt="instructor"
+          class="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
+        >
       </div>
-      <div class="details">
-        <h3>{{ instructor }}</h3>
-        <div class="rating">
-          <i v-for="i in 5" :key="i" class="fas fa-star filled"></i>
-          <span>4.9 Instructor Rating</span>
-        </div>
-        <div class="stats">
-          <div class="stat">
-            <strong>12,540</strong> Students
-          </div>
-          <div class="stat">
-            <strong>8</strong> Courses
-          </div>
-          <div class="stat">
-            <strong>3,256</strong> Reviews
+      
+      <!-- Details -->
+      <div class="details flex-1 space-y-4">
+        <div>
+          <h3 class="text-xl md:text-2xl font-bold text-gray-800">{{ instructor }}</h3>
+          <div class="rating flex items-center gap-2 mt-1">
+            <div class="flex text-yellow-400">
+              <i v-for="i in 5" :key="i" class="fas fa-star"></i>
+            </div>
+            <span class="text-gray-600">4.9 Instructor Rating</span>
           </div>
         </div>
-        <p class="bio">
-          {{ instructor }} is a professional web developer with over 10 years of experience building applications with Vue.js. 
-          He has worked with companies like Google, Microsoft, and Netflix to build scalable frontend architectures.
+        
+        <!-- Stats -->
+        <div class="stats flex flex-wrap gap-4 md:gap-6">
+          <div class="stat">
+            <strong class="block text-blue-600 text-xl font-bold">{{ students || '12,540' }}</strong>
+            <span class="text-gray-500 text-sm">Students</span>
+          </div>
+          <div class="stat">
+            <strong class="block text-blue-600 text-xl font-bold">{{ coursesCount || '8' }}</strong>
+            <span class="text-gray-500 text-sm">Courses</span>
+          </div>
+          <div class="stat">
+            <strong class="block text-blue-600 text-xl font-bold">{{ reviews || '3,256' }}</strong>
+            <span class="text-gray-500 text-sm">Reviews</span>
+          </div>
+        </div>
+        
+        <!-- Bio -->
+        <p class="bio text-gray-600 leading-relaxed">
+          {{ instructor }} {{ bio || 'has not provided a bio.' }}
         </p>
       </div>
     </div>
     
+    <!-- Other Courses -->
     <div class="other-courses" v-if="otherCourses.length">
-      <h3>Other Courses by {{ instructor }}</h3>
-      <div class="courses-grid">
-        <div class="course-card" v-for="course in otherCourses" :key="course.id">
-          <img :src="course.image" :alt="course.title">
-          <h4>{{ course.title }}</h4>
-          <div class="meta">
-            <span class="rating">
-              <i class="fas fa-star filled"></i> {{ course.rating.toFixed(1) }}
-            </span>
-            <span class="price">${{ course.price }}</span>
+      <h3 class="text-xl md:text-2xl font-bold text-gray-800 pb-3 border-b border-gray-200 mb-6">
+        Other Courses by {{ instructor }}
+      </h3>
+      
+      <div class="courses-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div 
+          v-for="course in otherCourses" 
+          :key="course.id"
+          class="course-card bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+        >
+          <img 
+            :src="course.image" 
+            :alt="course.title"
+            class="w-full h-40 object-cover"
+          >
+          <div class="p-4 space-y-2">
+            <h4 class="font-semibold text-gray-800 line-clamp-2">{{ course.title }}</h4>
+            <div class="meta flex justify-between items-center pt-2">
+              <span class="rating flex items-center gap-1 text-yellow-500 font-medium">
+                <i class="fas fa-star"></i>
+                <span>{{ course.rating.toFixed(1) }}</span>
+              </span>
+              <span class="price text-blue-600 font-bold">${{ course.price }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -52,18 +86,15 @@
 export default {
   name: 'CourseInstructor',
   props: {
-    instructor: {
-      type: String,
-      required: true
-    },
-    otherCourses: {
-      type: Array,
-      default: () => []
-    }
+    instructor: { type: String, required: true },
+    otherCourses: { type: Array, default: () => [] },
+    students: { type: [Number, String], default: '' },
+    coursesCount: { type: [Number, String], default: '' },
+    reviews: { type: [Number, String], default: '' },
+    bio: { type: String, default: '' }
   },
   computed: {
     instructorImage() {
-      // This would normally come from the instructor data
       const name = this.instructor.toLowerCase().replace(/\s+/g, '-')
       return `/images/instructors/${name}.jpg`
     }
@@ -72,111 +103,31 @@ export default {
 </script>
 
 <style scoped>
-.course-instructor h2 {
-  font-size: 1.8rem;
-  margin-bottom: 30px;
-}
-
-.instructor-profile {
-  display: flex;
-  gap: 30px;
-  margin-bottom: 40px;
-}
-
-.avatar {
-  flex: 0 0 150px;
-}
-
-.avatar img {
-  width: 100%;
-  border-radius: 50%;
-}
-
-.details {
-  flex: 1;
-}
-
-.details h3 {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-}
-
-.rating {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.rating i {
-  color: #ffc107;
-}
-
-.stats {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.stat strong {
-  font-size: 1.2rem;
-  color: #4e6bff;
-}
-
-.bio {
-  line-height: 1.6;
-  color: #555;
-}
-
-.other-courses h3 {
-  font-size: 1.4rem;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.courses-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-}
-
+/* Animation for course cards */
 .course-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  overflow: hidden;
-  transition: transform 0.3s;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.course-card:hover {
-  transform: translateY(-5px);
+/* Pulse animation for stars */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
-.course-card img {
-  width: 100%;
-  height: 140px;
-  object-fit: cover;
+.rating:hover i {
+  animation: pulse 0.5s ease;
 }
 
-.course-card h4 {
-  padding: 15px;
-  margin: 0;
-  font-size: 1rem;
-}
-
-.meta {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 15px 15px;
-}
-
-.rating {
-  color: #ffc107;
-  font-weight: 600;
-}
-
-.price {
-  font-weight: 600;
-  color: #4e6bff;
+/* Responsive adjustments for very small screens */
+@media (max-width: 400px) {
+  .avatar {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .courses-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

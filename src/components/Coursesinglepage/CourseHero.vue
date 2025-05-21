@@ -1,33 +1,77 @@
 <template>
-  <section class="course-hero" :style="{ backgroundImage: `url(${course.image})` }">
-    <div class="overlay"></div>
-    <div class="container">
-      <div class="hero-content">
-        <div class="breadcrumbs">
-          <router-link to="/courses">Courses</router-link> / {{ course.category }}
+  <section 
+    class="relative min-h-[400px] md:min-h-[500px] lg:min-h-[600px] flex items-center bg-cover bg-center text-white py-16 px-4 sm:px-6"
+    :style="{ backgroundImage: `url(${course.image})` }"
+  >
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-black/60"></div>
+    
+    <div class="container mx-auto relative z-10">
+      <div class="max-w-3xl">
+        <!-- Breadcrumbs -->
+        <div class="text-sm md:text-base mb-4 text-white/80">
+          <router-link 
+            to="/courses" 
+            class="text-white hover:text-blue-300 transition-colors duration-200"
+          >
+            Courses
+          </router-link> 
+          <span class="mx-1">/</span> 
+          <span>{{ course.title }}</span>
         </div>
-        <h1>{{ course.title }}</h1>
-        <div class="meta">
-          <div class="rating">
-            <span class="stars">
-              <i v-for="i in 5" :key="i" :class="['fas fa-star', { 'filled': i <= Math.round(course.rating) }]"></i>
-            </span>
+        
+        <!-- Title -->
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight">
+          {{ course.title }}
+        </h1>
+        
+        <!-- Meta Info -->
+        <div class="flex flex-wrap gap-4 md:gap-6 mb-6 text-sm md:text-base">
+          <!-- Rating -->
+          <div class="flex items-center">
+            <div class="flex mr-1 text-yellow-400">
+              <i 
+                v-for="i in 5" 
+                :key="i" 
+                class="fas fa-star"
+                :class="{ 'text-gray-300': i > Math.round(course.rating) }"
+              ></i>
+            </div>
             <span>({{ course.rating.toFixed(1) }})</span>
           </div>
-          <div class="students">
-            <i class="fas fa-users"></i> {{ course.students.toLocaleString() }} students
+          
+          <!-- Students -->
+          <div class="flex items-center">
+            <i class="fas fa-users mr-1.5"></i>
+            <span>{{ course.students.toLocaleString() }} students</span>
           </div>
-          <div class="level">
-            <i class="fas fa-signal"></i> {{ course.level }}
+          
+          <!-- Level -->
+          <div class="flex items-center">
+            <i class="fas fa-signal mr-1.5"></i>
+            <span>{{ course.level }}</span>
           </div>
         </div>
-        <p class="description">{{ course.descriptionExtended }}</p>
-        <div class="actions">
-          <button class="btn btn-primary" @click="$emit('enroll')">
+        
+        <!-- Description -->
+        <p class="text-lg md:text-xl mb-8 leading-relaxed">
+          {{ course.descriptionExtended }}
+        </p>
+        
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row gap-4">
+          <button 
+            @click="$emit('enroll')"
+            class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-lg"
+          >
             Enroll Now for ${{ course.price }}
           </button>
-          <button class="btn btn-outline">
-            <i class="far fa-heart"></i> Add to Wishlist
+          
+          <button 
+            class="px-8 py-3 bg-transparent border-2 border-white hover:bg-white/10 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
+          >
+            <i class="far fa-heart"></i>
+            <span>Add to Wishlist</span>
           </button>
         </div>
       </div>
@@ -42,111 +86,49 @@ export default {
     course: {
       type: Object,
       required: true
-    }
+    },
+    description: { type: String, required: true },
+    features: { type: Array, default: () => [] },
+    duration: { type: String, default: '' }
   }
 }
 </script>
 
 <style scoped>
-.course-hero {
-  position: relative;
-  min-height: 500px;
-  background-size: cover;
-  background-position: center;
-  color: white;
-  padding: 80px 0;
-  display: flex;
-  align-items: center;
+/* Animation for buttons */
+button {
+  transition: all 0.3s ease;
 }
 
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+/* Pulse animation for primary button */
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(78, 107, 255, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(78, 107, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(78, 107, 255, 0); }
 }
 
-.hero-content {
-  position: relative;
-  z-index: 1;
-  max-width: 700px;
+/* Apply pulse animation on hover */
+button:first-child:hover {
+  animation: pulse 1.5s infinite;
 }
 
-.breadcrumbs {
-  margin-bottom: 15px;
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
-
-.breadcrumbs a {
-  color: white;
-  text-decoration: none;
-}
-
-h1 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-  line-height: 1.2;
-}
-
-.meta {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 25px;
-  font-size: 0.9rem;
-}
-
-.meta i {
-  margin-right: 5px;
-}
-
-.stars {
-  display: inline-block;
-  margin-right: 5px;
-}
-
-.stars .filled {
-  color: #ffc107;
-}
-
-.description {
-  font-size: 1.1rem;
-  margin-bottom: 30px;
-  line-height: 1.6;
-}
-
-.actions {
-  display: flex;
-  gap: 15px;
-}
-
-.btn {
-  padding: 12px 24px;
-  border-radius: 4px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.btn-primary {
-  background-color: #4e6bff;
-  border: none;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #3a56d4;
-}
-
-.btn-outline {
-  background: transparent;
-  border: 1px solid white;
-  color: white;
-}
-
-.btn-outline:hover {
-  background: rgba(255, 255, 255, 0.1);
+/* Responsive adjustments for very small screens */
+@media (max-width: 400px) {
+  .course-hero {
+    min-height: 450px;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+  
+  button {
+    width: 100%;
+    padding: 0.75rem();
+  }
 }
 </style>

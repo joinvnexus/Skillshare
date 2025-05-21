@@ -1,71 +1,60 @@
 <template>
-  <div class="course-sidebar">
-    <div class="sidebar-card">
-      <div class="card-header">
-        <h3>Course Details</h3>
+  <div class="sticky top-5 space-y-6">
+    <!-- Course Details Card -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-800">Course Details</h3>
       </div>
-      <div class="card-body">
-        <ul class="course-meta">
-          <li>
-            <i class="fas fa-clock"></i>
-            <span>Duration: <strong>{{ course.duration }}</strong></span>
-          </li>
-          <li>
-            <i class="fas fa-book"></i>
-            <span>Lessons: <strong>{{ course.lessons }}</strong></span>
-          </li>
-          <li>
-            <i class="fas fa-signal"></i>
-            <span>Level: <strong>{{ course.level }}</strong></span>
-          </li>
-          <li>
-            <i class="fas fa-language"></i>
-            <span>Language: <strong>English</strong></span>
-          </li>
-          <li>
-            <i class="fas fa-certificate"></i>
-            <span>Certificate: <strong>Yes</strong></span>
+      <div class="p-5">
+        <ul class="space-y-3">
+          <li v-for="(item, index) in metaItems" :key="index" class="flex items-center py-2 border-b border-gray-100 last:border-0">
+            <i :class="item.icon" class="w-5 text-blue-500 mr-3"></i>
+            <span class="text-gray-600">{{ item.label }}: <strong class="text-gray-800">{{ item.value }}</strong></span>
           </li>
         </ul>
       </div>
     </div>
     
-    <div class="sidebar-card price-card">
-      <div class="price">
-        <span class="current">${{ course.price }}</span>
-        <span class="original" v-if="course.originalPrice">${{ course.originalPrice }}</span>
+    <!-- Price Card -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden text-center">
+      <div class="p-5">
+        <div class="flex justify-center items-baseline mb-4">
+          <span class="text-3xl font-bold text-blue-500">${{ course.price }}</span>
+          <span v-if="course.originalPrice" class="ml-2 text-lg text-gray-400 line-through">${{ course.originalPrice }}</span>
+        </div>
+        <button 
+          @click="$emit('enroll')"
+          class="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition duration-200"
+        >
+          Enroll Now
+        </button>
+        <p class="mt-3 text-sm text-gray-500">30-Day Money-Back Guarantee</p>
       </div>
-      <button class="btn btn-enroll" @click="$emit('enroll')">
-        Enroll Now
-      </button>
-      <p class="money-back">30-Day Money-Back Guarantee</p>
       
-      <div class="includes">
-        <h4>This course includes:</h4>
-        <ul>
-          <li><i class="fas fa-video"></i> {{ course.duration }} on-demand video</li>
-          <li><i class="fas fa-file-alt"></i> {{ course.lessons }} downloadable resources</li>
-          <li><i class="fas fa-mobile-alt"></i> Access on mobile and TV</li>
-          <li><i class="fas fa-infinity"></i> Full lifetime access</li>
-          <li><i class="fas fa-trophy"></i> Certificate of completion</li>
+      <div class="px-5 py-4 border-t border-gray-100 text-left">
+        <h4 class="text-base font-medium text-gray-800 mb-3">This course includes:</h4>
+        <ul class="space-y-2">
+          <li v-for="(feature, index) in courseFeatures" :key="index" class="flex items-start">
+            <i :class="feature.icon" class="w-5 text-blue-500 mr-2 mt-0.5"></i>
+            <span class="text-sm text-gray-600">{{ feature.text }}</span>
+          </li>
         </ul>
       </div>
     </div>
     
-    <div class="sidebar-card share-card">
-      <h4>Share this course</h4>
-      <div class="social-links">
-        <a href="#" class="social-link facebook">
-          <i class="fab fa-facebook-f"></i>
-        </a>
-        <a href="#" class="social-link twitter">
-          <i class="fab fa-twitter"></i>
-        </a>
-        <a href="#" class="social-link linkedin">
-          <i class="fab fa-linkedin-in"></i>
-        </a>
-        <a href="#" class="social-link whatsapp">
-          <i class="fab fa-whatsapp"></i>
+    <!-- Share Card -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden p-5">
+      <h4 class="text-base font-medium text-gray-800 mb-3">Share this course</h4>
+      <div class="flex justify-between">
+        <a 
+          v-for="social in socialLinks" 
+          :key="social.name"
+          :href="social.href" 
+          :class="`bg-${social.color}-500 hover:bg-${social.color}-600`"
+          class="w-10 h-10 flex items-center justify-center rounded-full text-white transition duration-200 transform hover:-translate-y-1"
+          aria-label="Share on Facebook"
+        >
+          <i :class="social.icon"></i>
         </a>
       </div>
     </div>
@@ -73,6 +62,8 @@
 </template>
 
 <script>
+import { computed } from 'vue'
+
 export default {
   name: 'CourseSidebar',
   props: {
@@ -80,179 +71,32 @@ export default {
       type: Object,
       required: true
     }
+  },
+  setup(props) {
+    const metaItems = computed(() => [
+      { icon: 'fas fa-clock', label: 'Duration', value: props.course.duration },
+      { icon: 'fas fa-book', label: 'Lessons', value: props.course.lessons },
+      { icon: 'fas fa-signal', label: 'Level', value: props.course.level },
+      { icon: 'fas fa-language', label: 'Language', value: props.course.Language || 'N/A' },
+      { icon: 'fas fa-certificate', label: 'Certificate', value: props.course.certificate ? 'Yes' : 'No' }
+    ])
+
+    const courseFeatures = computed(() => [
+      { icon: 'fas fa-video', text: `${props.course.duration} on-demand video` },
+      { icon: 'fas fa-file-alt', text: `${props.course.lessons} downloadable resources` },
+      { icon: 'fas fa-mobile-alt', text: 'Access on mobile and TV' },
+      { icon: 'fas fa-infinity', text: 'Full lifetime access' },
+      { icon: 'fas fa-trophy', text: 'Certificate of completion' }
+    ])
+
+    const socialLinks = [
+      { name: 'facebook', icon: 'fab fa-facebook-f', color: 'blue', href: '#' },
+      { name: 'twitter', icon: 'fab fa-twitter-t', color: 'sky', href: '#' },
+      { name: 'linkedin', icon: 'fab fa-linkedin-in', color: 'indigo', href: '#' },
+      { name: 'whatsapp', icon: 'fab fa-whatsapp', color: 'emerald', href: '#' }
+    ]
+
+    return { metaItems, courseFeatures, socialLinks }
   }
 }
 </script>
-<style>
-.course-sidebar {
-  position: sticky;
-  top: 20px;
-}
-
-.sidebar-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  margin-bottom: 20px;
-  overflow: hidden;
-}
-
-.card-header {
-  padding: 15px 20px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.card-header h3 {
-  margin: 0;
-  font-size: 1.2rem;
-}
-
-.card-body {
-  padding: 20px;
-}
-
-.course-meta {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.course-meta li {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.course-meta li:last-child {
-  border-bottom: none;
-}
-
-.course-meta i {
-  width: 20px;
-  color: #4e6bff;
-}
-
-.price-card {
-  text-align: center;
-}
-
-.price {
-  margin: 20px 0;
-}
-
-.current {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #4e6bff;
-}
-
-.original {
-  font-size: 1.2rem;
-  text-decoration: line-through;
-  color: #999;
-  margin-left: 10px;
-}
-
-.btn-enroll {
-  display: block;
-  width: 100%;
-  padding: 15px;
-  background: #4e6bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-font-weight: 600;
-font-size: 1.1rem;
-cursor: pointer;
-transition: background 0.3s;
-}
-
-.btn-enroll:hover {
-background: #3a56d4;
-}
-
-.money-back {
-margin: 15px 0;
-color: #666;
-font-size: 0.9rem;
-}
-
-.includes {
-text-align: left;
-padding-top: 20px;
-border-top: 1px solid #f0f0f0;
-}
-
-.includes h4 {
-font-size: 1rem;
-margin-bottom: 15px;
-}
-
-.includes ul {
-list-style: none;
-padding: 0;
-margin: 0;
-}
-
-.includes li {
-display: flex;
-align-items: center;
-gap: 10px;
-padding: 8px 0;
-font-size: 0.9rem;
-}
-
-.includes i {
-width: 20px;
-color: #4e6bff;
-}
-
-.share-card {
-padding: 20px;
-}
-
-.share-card h4 {
-margin-top: 0;
-margin-bottom: 15px;
-font-size: 1rem;
-}
-
-.social-links {
-display: flex;
-justify-content: space-between;
-}
-
-.social-link {
-display: flex;
-align-items: center;
-justify-content: center;
-width: 40px;
-height: 40px;
-border-radius: 50%;
-color: white;
-transition: transform 0.3s;
-}
-
-.social-link:hover {
-transform: translateY(-3px);
-}
-
-.facebook {
-background: #3b5998;
-}
-
-.twitter {
-background: #1da1f2;
-}
-
-.linkedin {
-background: #0077b5;
-}
-
-.whatsapp {
-background: #25d366;
-}
-</style>
-
