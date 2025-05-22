@@ -22,7 +22,9 @@
             </p>
             <div class="flex items-center">
               <span class="mr-2 text-gray-600">Sort by:</span>
-              <select v-model="sortBy" @change="updateSort"
+              <select 
+              v-model="sortBy"
+               @change="updateSort"
                 class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="newest">Newest</option>
                 <option value="popular">Most Popular</option>
@@ -39,7 +41,13 @@
           <CourseGrid v-else :courses="paginatedCourses" />
 
           <!-- Pagination -->
-          <Pagination :current-page="currentPage" :total-pages="totalPages" @page-changed="changePage" />
+          <Pagination 
+          :current-page="currentPage" 
+          :total-pages="totalPages" 
+          @page-changed="changePage"
+          :loading="loading"
+          :error="error"
+           />
         </main>
       </div>
     </div>

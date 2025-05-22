@@ -10,13 +10,14 @@
           {{ filteredCourses.length }} {{ filteredCourses.length === 1 ? 'result' : 'results' }} found
         </p>
       </div>
-      
+      <!-- Sort Options -->
       <div class="flex flex-col sm:flex-row gap-3">
         <div class="relative">
           <label for="sort" class="sr-only">Sort by</label>
           <select 
+            :value="sortBy"
+            @change="onSortChange"
             id="sort"
-            v-model="sortBy"
             class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
           >
             <option value="relevance">Sort by: Relevance</option>
@@ -47,7 +48,6 @@
             <div class="space-y-2">
               <div v-for="category in allCategories"
                :key="category" class="flex items-center">
-
                 <input 
                   :checked="selectedCategories.includes(category)"
                   @change="toggleCategory(category)"
@@ -66,61 +66,44 @@
           <div class="mb-4">
             <h4 class="text-sm font-medium text-gray-700 mb-2">Level</h4>
             <div class="space-y-2">
-              <div v-for="level in levels" :key="level" class="flex items-center">
-                <input 
-                  :id="`level-${level}`"
-                  v-model="selectedLevels"
-                  :value="level"
+              <div v-for="level in allLevels"
+               :key="level" class="flex items-center">
+                <input
                   type="checkbox"
-                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                >
-                <label :for="`level-${level}`" class="ml-3 text-sm text-gray-600">
+                  :value="level"
+                  :checked="selectedLevels.includes(level)"
+                  @change="toggleLevel(level)"
+                  class="rounded text-blue-600"
+                />
+                <label  class="ml-3 text-sm text-gray-600">
                   {{ level }}
                 </label>
               </div>
             </div>
           </div>
           
-          <!-- Price Filter -->
-          <div>
-            <h4 class="text-sm font-medium text-gray-700 mb-2">Price</h4>
-            <div class="space-y-2">
-              <div class="flex items-center">
-                <input 
-                  id="price-free"
-                  v-model="priceFilter"
-                  value="free"
-                  type="radio"
-                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                >
-                <label for="price-free" class="ml-3 text-sm text-gray-600">
-                  Free only
-                </label>
-              </div>
-              <div class="flex items-center">
-                <input 
-                  id="price-paid"
-                  v-model="priceFilter"
-                  value="paid"
-                  type="radio"
-                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                >
-                <label for="price-paid" class="ml-3 text-sm text-gray-600">
-                  Paid only
-                </label>
-              </div>
-              <div class="flex items-center">
-                <input 
-                  id="price-all"
-                  v-model="priceFilter"
-                  value="all"
-                  type="radio"
-                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                >
-                <label for="price-all" class="ml-3 text-sm text-gray-600">
-                  All prices
-                </label>
-              </div>
+          <!-- Price Range Slider -->
+          <div class="px-2 mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Price Range (up to ${{ priceRange[1] }})
+            </label>
+            <vue-slider
+              v-model="priceRange[1]"
+              :min="0"
+              :max="1000"
+              :interval="10"
+              :tooltip="'always'"
+              :tooltip-formatter="'$' + value"
+              :height="6"
+              :dot-size="20"
+              :process-style="{ backgroundColor: '#3b82f6' }"
+              :tooltip-style="{ backgroundColor: '#3b82f6', borderColor: '#3b82f6' }"
+              @change="handlePriceRangeChange"
+              class="mb-2"
+            />
+            <div class="flex justify-between text-xs text-gray-500">
+              <span>$0</span>
+              <span>$1000</span>
             </div>
           </div>
         </div>
@@ -164,7 +147,7 @@
           </div>
         </div>
         
-        <!-- Results Grid -->
+      <!-- Results Grid -->
         <div v-else class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <div 
             v-for="course in paginatedCourses" 
@@ -232,14 +215,14 @@
         <div v-if="totalPages > 1" class="flex items-center justify-between mt-8">
           <div class="flex-1 flex justify-between sm:hidden">
             <button 
-              @click="currentPage = Math.max(1, currentPage - 1)"
+              @click="changePage(currentPage - 1)"
               :disabled="currentPage === 1"
               class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
             >
               Previous
             </button>
             <button 
-              @click="currentPage = Math.min(totalPages, currentPage + 1)"
+              @click="changePage(currentPage + 1)"
               :disabled="currentPage === totalPages"
               class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
             >
@@ -250,8 +233,8 @@
           <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p class="text-sm text-gray-700">
-                Showing <span class="font-medium">{{ (currentPage - 1) * perPage + 1 }}</span> to 
-                <span class="font-medium">{{ Math.min(currentPage * perPage, filteredCourses.length) }}</span> of 
+                Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to 
+                <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredCourses.length) }}</span> of 
                 <span class="font-medium">{{ filteredCourses.length }}</span> results
               </p>
             </div>
@@ -259,12 +242,13 @@
             <div>
               <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                 <button 
-                  @click="currentPage = Math.max(1, currentPage - 1)"
-                  :disabled="currentPage === 1"
+                   @click="changePage(currentPage - 1)"
+                   :disabled="currentPage === 1"
                   class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                 >
                   <span class="sr-only">Previous</span>
-                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <!-- SVG omitted for brevity -->
+                   <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                   </svg>
                 </button>
@@ -272,14 +256,14 @@
                 <button 
                   v-for="page in visiblePages"
                   :key="page"
-                  @click="currentPage = page"
+                   @click="changePage(page)"
                   :class="[page === currentPage ? 'z-10 bg-blue-50 border-blue-500 text-blue-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50', 'relative inline-flex items-center px-4 py-2 border text-sm font-medium']"
                 >
                   {{ page }}
                 </button>
                 
                 <button 
-                  @click="currentPage = Math.min(totalPages, currentPage + 1)"
+                  @click="changePage(Math.min(totalPages, currentPage + 1))"
                   :disabled="currentPage === totalPages"
                   class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                 >
@@ -301,15 +285,7 @@
 import { mapState, mapGetters, mapActions } from 'vuex'
 
 export default {
-  data() {
-    return {
-      sortBy: 'relevance',
-      perPage: 9,
-      // Remove local state that's now in Vuex
-    }
-  },
   computed: {
-    // Map state and getters from Vuex
     ...mapState('filters', [
       'searchQuery',
       'selectedCategories', 
@@ -319,7 +295,8 @@ export default {
     ]),
     ...mapState('ui', [
       'loading',
-      'currentPage'
+      'currentPage',
+      'itemsPerPage'
     ]),
     ...mapGetters('filters', [
       'filteredCourses',
@@ -331,11 +308,12 @@ export default {
       'totalPages',
       'paginatedCourses'
     ]),
-    
-    // Remove local computed properties that are now in getters
+    visiblePages() {
+      // Simple pagination: show all pages
+      return Array.from({ length: this.totalPages }, (_, i) => i + 1)
+    }
   },
   methods: {
-    // Map actions from Vuex
     ...mapActions('filters', [
       'filterCourses',
       'updateSearchQuery',
@@ -348,8 +326,10 @@ export default {
     ...mapActions('ui', [
       'changePage'
     ]),
-    
-    // Update your methods to use the mapped actions:
+    onSortChange(e) {
+      this.updateSortBy(e.target.value)
+      this.changePage(1)
+    },
     clearSearch() {
       this.updateSearchQuery('')
       this.$router.push({ name: 'SearchResults', query: { q: '' } })
@@ -360,41 +340,33 @@ export default {
         : [...this.selectedCategories, category]
       this.updateSelectedCategories(updatedCategories)
     },
-    // Remove other methods that are now actions
+    toggleLevel(level) {
+      const updatedLevels = this.selectedLevels.includes(level)
+        ? this.selectedLevels.filter(l => l !== level)
+        : [...this.selectedLevels, level]
+      this.updateSelectedLevels(updatedLevels)
+    },
+    handlePriceRangeChange() {
+      this.updatePriceRange([this.priceRange[0], this.priceRange[1]])
+    }
   },
   created() {
-    // Initialize with data from route if needed
     if (this.$route.query.q) {
       this.updateSearchQuery(this.$route.query.q)
     }
     this.filterCourses()
   },
   watch: {
-    // Keep your watchers but update to use Vuex
-    searchQuery() {
-      this.changePage(1)
-    },
-    sortBy() {
-      this.changePage(1)
-    },
-    // ... other watchers
-    selectedCategories() {
-      this.currentPage = 1;
-    },
-    selectedLevels() {
-      this.currentPage = 1;
-    },
-    priceFilter() {
-      this.currentPage = 1;
-    }
+    searchQuery() { this.changePage(1) },
+    sortBy() { this.changePage(1) },
+    selectedCategories() { this.changePage(1) },
+    selectedLevels() { this.changePage(1) },
+    priceRange() { this.changePage(1) }
   }
 }
 </script>
 
-
-
 <style>
-/* Custom line clamping for text overflow */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

@@ -3,7 +3,7 @@ const state = {
   error: null,
   selectedCourse: null,
   currentPage: 1,
-  itemsPerPage: 9
+  itemsPerPage: 6
 }
 
 const mutations = {
