@@ -23,7 +23,7 @@
             class="flex items-center space-x-2"
           >
             <input
-              type="checkbox"
+             type="checkbox"
               :value="category"
               :checked="selectedCategories.includes(category)"
               @change="toggleCategory(category)"

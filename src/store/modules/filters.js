@@ -43,7 +43,9 @@ const actions = {
 
     if (state.selectedCategories.length > 0) {
       filtered = filtered.filter(course =>
-        course.tags.some(tag => state.selectedCategories.includes(tag))
+        state.selectedCategories.some(category =>
+          course.category && course.category.includes(category)
+        )
       )
     }
 
@@ -105,10 +107,13 @@ const actions = {
 }
 
 const getters = {
-  allCategories: (state, getters, rootState) => {
-    const allTags = rootState.courses.allCourses.flatMap(course => course.tags)
-    return [...new Set(allTags)]
-  },
+    filteredCourses: state => state.filteredCourses,
+
+ allCategories: (state, getters, rootState) => {
+  // Use categories, not tags
+  const allCategories = rootState.courses.allCourses.flatMap(course => course.category || [])
+  return [...new Set(allCategories)]
+},
   allLevels: (state, getters, rootState) => {
     return [...new Set(rootState.courses.allCourses.map(course => course.level))]
   },

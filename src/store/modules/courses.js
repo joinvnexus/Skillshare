@@ -28,7 +28,7 @@ const actions = {
   async fetchCourses({ commit }) {
     try {
       commit('ui/SET_LOADING', true, { root: true })
-      const response = await import('@/data/courses.json')
+      const response = await import('@/data/new.json')
       const courses = response.default
 
       commit('SET_COURSES', courses)

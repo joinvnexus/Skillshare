@@ -60,7 +60,7 @@ export default {
 
   computed: {
   allCategories() {
-    return ['All', ...this.$store.getters['filters/allCategories']]
+    return ['All', ...this.$store.getters['filters/allCategories']].slice(0, 9)
   }
 },
   methods: {
