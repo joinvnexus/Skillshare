@@ -20,9 +20,9 @@
             id="sort"
             class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
           >
-            <option value="relevance">Sort by: Relevance</option>
-            <option value="date">Sort by: Newest</option>
-            <option value="popularity">Sort by: Popularity</option>
+            <option value="newest">Sort by: Relevance</option>
+            <option value="createdAt">Sort by: Newest</option>
+            <option value="popular">Sort by: Popularity</option>
             <option value="rating">Sort by: Highest Rated</option>
           </select>
         </div>
@@ -53,9 +53,10 @@
                   @change="toggleCategory(category)"
                   :value="category"
                   type="checkbox"
+                  id="category-${category}"
                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 >
-                <label class="ml-3 text-sm text-gray-600">
+                <label :for="`category-${category}`" class="ml-3 text-sm text-gray-600">
                   {{ category }}
                 </label>
               </div>
@@ -70,12 +71,13 @@
                :key="level" class="flex items-center">
                 <input
                   type="checkbox"
+                  :id="`level-${level}`"
                   :value="level"
                   :checked="selectedLevels.includes(level)"
                   @change="toggleLevel(level)"
                   class="rounded text-blue-600"
                 />
-                <label  class="ml-3 text-sm text-gray-600">
+                <label :for="`level-${level}`" class="ml-3 text-sm text-gray-600">
                   {{ level }}
                 </label>
               </div>
@@ -85,15 +87,15 @@
           <!-- Price Range Slider -->
           <div class="px-2 mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">
-              Price Range (up to ${{ priceRange[1] }})
+              Price Range (up to ${{ priceRange[1] }})<br>
             </label>
             <vue-slider
-              v-model="priceRange[1]"
+              v-model="priceRange"
               :min="0"
               :max="1000"
               :interval="10"
               :tooltip="'always'"
-              :tooltip-formatter="'$' + value"
+              :tooltip-formatter="value => '$' + value"
               :height="6"
               :dot-size="20"
               :process-style="{ backgroundColor: '#3b82f6' }"
@@ -159,6 +161,7 @@
                 :src="course.image" 
                 :alt="course.title" 
                 class="h-48 w-full object-cover"
+                loading="lazy"
               >
               <div class="absolute top-2 right-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
                 {{ course.price === 0 ? 'FREE' : `$${course.price}` }}
@@ -172,7 +175,7 @@
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                   </svg>
                 </div>
-                <span class="text-xs text-gray-500 ml-1">({{ course.reviews }})</span>
+                <span class="text-xs text-gray-500 ml-1">({{ course.rating }})</span>
               </div>
               
               <h3 class="font-semibold text-lg mb-2 text-gray-900 line-clamp-2">
@@ -202,6 +205,7 @@
                     :src="course.instructor.avatar" 
                     :alt="course.instructor.name" 
                     class="h-8 w-8 rounded-full object-cover mr-2"
+                    loading="lazy"
                   >
                   <span class="text-sm text-gray-600">{{ course.instructor.name }}</span>
                 </div>
@@ -247,8 +251,7 @@
                   class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                 >
                   <span class="sr-only">Previous</span>
-                  <!-- SVG omitted for brevity -->
-                   <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                   </svg>
                 </button>
@@ -263,7 +266,7 @@
                 </button>
                 
                 <button 
-                  @click="changePage(Math.min(totalPages, currentPage + 1))"
+                  @click="changePage(currentPage + 1)"
                   :disabled="currentPage === totalPages"
                   class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                 >
@@ -283,8 +286,16 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
+import VueSlider from 'vue-slider-component'
+import 'vue-slider-component/theme/default.css'
 
 export default {
+  name: 'SearchResults',
+  
+  components: {
+    VueSlider
+  },
+  
   computed: {
     ...mapState('filters', [
       'searchQuery',
@@ -308,11 +319,26 @@ export default {
       'totalPages',
       'paginatedCourses'
     ]),
+    
     visiblePages() {
-      // Simple pagination: show all pages
-      return Array.from({ length: this.totalPages }, (_, i) => i + 1)
+      const pages = []
+      const maxVisible = 5
+      let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2))
+      let end = Math.min(this.totalPages, start + maxVisible - 1)
+      
+      // Adjust if we're at the beginning or end
+      if (end - start + 1 < maxVisible) {
+        start = Math.max(1, end - maxVisible + 1)
+      }
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i)
+      }
+      
+      return pages
     }
   },
+  
   methods: {
     ...mapActions('filters', [
       'filterCourses',
@@ -326,42 +352,53 @@ export default {
     ...mapActions('ui', [
       'changePage'
     ]),
+    
     onSortChange(e) {
       this.updateSortBy(e.target.value)
       this.changePage(1)
     },
+    
     clearSearch() {
       this.updateSearchQuery('')
       this.$router.push({ name: 'SearchResults', query: { q: '' } })
     },
+    
     toggleCategory(category) {
       const updatedCategories = this.selectedCategories.includes(category)
         ? this.selectedCategories.filter(c => c !== category)
         : [...this.selectedCategories, category]
       this.updateSelectedCategories(updatedCategories)
+      this.changePage(1)
     },
+    
     toggleLevel(level) {
       const updatedLevels = this.selectedLevels.includes(level)
         ? this.selectedLevels.filter(l => l !== level)
         : [...this.selectedLevels, level]
       this.updateSelectedLevels(updatedLevels)
+      this.changePage(1)
     },
-    handlePriceRangeChange() {
-      this.updatePriceRange([this.priceRange[0], this.priceRange[1]])
+    
+    handlePriceRangeChange(value) {
+      this.updatePriceRange(value)
+      this.changePage(1)
     }
   },
+  
   created() {
     if (this.$route.query.q) {
       this.updateSearchQuery(this.$route.query.q)
     }
     this.filterCourses()
   },
+  
   watch: {
-    searchQuery() { this.changePage(1) },
-    sortBy() { this.changePage(1) },
-    selectedCategories() { this.changePage(1) },
-    selectedLevels() { this.changePage(1) },
-    priceRange() { this.changePage(1) }
+    searchQuery() {
+      this.changePage(1)
+    },
+    sortBy() {
+      this.changePage(1)
+    }
   }
 }
 </script>
