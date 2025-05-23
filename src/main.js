@@ -14,4 +14,7 @@ AOS.init();
 app.use(router)
 app.use(store) // Use the Vuex store
 
-app.mount('#app')
+// Initialize auth before mounting the app
+store.dispatch('auth/initializeAuth').then(() => {
+  app.mount('#app')
+})

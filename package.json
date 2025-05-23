@@ -13,6 +13,7 @@
     "@tailwindcss/vite": "^4.1.6",
     "@vueuse/core": "^13.1.0",
     "aos": "^2.3.4",
+    "firebase": "^11.8.1",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3",
     "vue-slider-component": "^4.1.0-beta.7",
