@@ -12,23 +12,40 @@ export const useAdminPanel = () => {
   const courses = ref([]);
   const learningPaths = ref([]);
   const blogs = ref([]);
+  const categories = ref([]);
+  const coupons = ref([]);
+  const reviews = ref([]);
+  const notifications = ref([]);
+  const auditLogs = ref([]);
   const userEdits = reactive({});
   const orderEdits = reactive({});
   const courseEdits = reactive({});
   const learningPathEdits = reactive({});
   const blogEdits = reactive({});
+  const categoryEdits = reactive({});
+  const couponEdits = reactive({});
   const usersMeta = ref({ page: 1, totalPages: 1, total: 0 });
   const testimonialsMeta = ref({ page: 1, totalPages: 1, total: 0 });
   const ordersMeta = ref({ page: 1, totalPages: 1, total: 0 });
   const coursesMeta = ref({ page: 1, totalPages: 1, total: 0 });
   const learningPathsMeta = ref({ page: 1, totalPages: 1, total: 0 });
   const blogsMeta = ref({ page: 1, totalPages: 1, total: 0 });
+  const categoriesMeta = ref({ page: 1, totalPages: 1, total: 0 });
+  const couponsMeta = ref({ page: 1, totalPages: 1, total: 0 });
+  const reviewsMeta = ref({ page: 1, totalPages: 1, total: 0 });
+  const notificationsMeta = ref({ page: 1, totalPages: 1, total: 0 });
+  const auditLogsMeta = ref({ page: 1, totalPages: 1, total: 0 });
   const userFilters = reactive({ page: 1, limit: 12, search: "", role: "", status: "" });
   const testimonialFilters = reactive({ page: 1, limit: 8, approved: "false", search: "" });
   const orderFilters = reactive({ page: 1, limit: 10, status: "", search: "" });
   const courseFilters = reactive({ page: 1, limit: 10, status: "", search: "" });
   const learningPathFilters = reactive({ page: 1, limit: 8, search: "", level: "", published: "" });
   const blogFilters = reactive({ page: 1, limit: 8, search: "", status: "" });
+  const categoryFilters = reactive({ page: 1, limit: 8, search: "" });
+  const couponFilters = reactive({ page: 1, limit: 8, search: "", type: "", active: "" });
+  const reviewFilters = reactive({ page: 1, limit: 8, search: "", rating: "", published: "false" });
+  const notificationFilters = reactive({ page: 1, limit: 8, search: "", type: "", isRead: "false" });
+  const auditLogFilters = reactive({ page: 1, limit: 8, search: "", entityType: "" });
   const createLearningPathForm = reactive({
     slug: "",
     title: "",
@@ -51,6 +68,31 @@ export const useAdminPanel = () => {
     content: "",
     status: "DRAFT",
     isFeatured: false
+  });
+  const createCategoryForm = reactive({
+    name: "",
+    slug: "",
+    description: "",
+    imageUrl: "",
+    displayOrder: 0
+  });
+  const createCouponForm = reactive({
+    code: "",
+    description: "",
+    type: "PERCENTAGE",
+    value: 10,
+    maxRedemptions: "",
+    startsAt: "",
+    expiresAt: "",
+    isActive: true
+  });
+  const createNotificationForm = reactive({
+    title: "",
+    message: "",
+    type: "SYSTEM",
+    linkUrl: "",
+    broadcast: true,
+    userId: ""
   });
 
   const notify = (type, message) => store.dispatch("ui/notify", { type, message });
@@ -108,6 +150,27 @@ export const useAdminPanel = () => {
         isFeatured: Boolean(blog.isFeatured)
       };
     }
+    for (const category of categories.value) {
+      categoryEdits[category.id] = {
+        name: category.name,
+        slug: category.slug,
+        description: category.description || "",
+        imageUrl: category.imageUrl || "",
+        displayOrder: Number(category.displayOrder || 0)
+      };
+    }
+    for (const coupon of coupons.value) {
+      couponEdits[coupon.id] = {
+        code: coupon.code,
+        description: coupon.description || "",
+        type: coupon.type,
+        value: Number(coupon.value || 0),
+        maxRedemptions: coupon.maxRedemptions ?? "",
+        startsAt: coupon.startsAt ? String(coupon.startsAt).slice(0, 10) : "",
+        expiresAt: coupon.expiresAt ? String(coupon.expiresAt).slice(0, 10) : "",
+        isActive: Boolean(coupon.isActive)
+      };
+    }
   };
 
   const buildParams = (filters) => {
@@ -156,11 +219,53 @@ export const useAdminPanel = () => {
     blogsMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
   };
 
+  const reloadCategories = async () => {
+    const response = await apiRequest(`/admin/categories?${buildParams(categoryFilters)}`, { auth: true });
+    categories.value = response.data || [];
+    categoriesMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
+  };
+
+  const reloadCoupons = async () => {
+    const response = await apiRequest(`/admin/coupons?${buildParams(couponFilters)}`, { auth: true });
+    coupons.value = response.data || [];
+    couponsMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
+  };
+
+  const reloadReviews = async () => {
+    const response = await apiRequest(`/admin/reviews?${buildParams(reviewFilters)}`, { auth: true });
+    reviews.value = response.data || [];
+    reviewsMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
+  };
+
+  const reloadNotifications = async () => {
+    const response = await apiRequest(`/admin/notifications?${buildParams(notificationFilters)}`, { auth: true });
+    notifications.value = response.data || [];
+    notificationsMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
+  };
+
+  const reloadAuditLogs = async () => {
+    const response = await apiRequest(`/admin/audit-logs?${buildParams(auditLogFilters)}`, { auth: true });
+    auditLogs.value = response.data || [];
+    auditLogsMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
+  };
+
   const reload = async () => {
     loading.value = true;
     error.value = null;
     try {
-      await Promise.all([reloadUsers(), reloadTestimonials(), reloadOrders(), reloadCourses(), reloadLearningPaths(), reloadBlogs()]);
+      await Promise.all([
+        reloadUsers(),
+        reloadTestimonials(),
+        reloadOrders(),
+        reloadCourses(),
+        reloadLearningPaths(),
+        reloadBlogs(),
+        reloadCategories(),
+        reloadCoupons(),
+        reloadReviews(),
+        reloadNotifications(),
+        reloadAuditLogs()
+      ]);
       primeFormState();
     } catch (err) {
       error.value = err.message;
@@ -440,6 +545,176 @@ export const useAdminPanel = () => {
     }
   };
 
+  const changeCategoriesPage = (page) => setPageAndReload(categoryFilters, page, reloadCategories, true);
+  const applyCategoryFilters = () => resetAndReload(categoryFilters, reloadCategories, true);
+
+  const createCategory = async () => {
+    try {
+      await apiRequest("/admin/categories", {
+        method: "POST",
+        auth: true,
+        body: {
+          name: createCategoryForm.name.trim(),
+          slug: createCategoryForm.slug.trim(),
+          description: createCategoryForm.description.trim() || null,
+          imageUrl: createCategoryForm.imageUrl.trim() || null,
+          displayOrder: Number(createCategoryForm.displayOrder || 0)
+        }
+      });
+      createCategoryForm.name = "";
+      createCategoryForm.slug = "";
+      createCategoryForm.description = "";
+      createCategoryForm.imageUrl = "";
+      createCategoryForm.displayOrder = 0;
+      await reloadCategories();
+      primeFormState();
+      notify("success", "Category created.");
+    } catch (err) {
+      error.value = err.message;
+      notify("error", err.message);
+    }
+  };
+
+  const updateCategory = async (id) => {
+    try {
+      await apiRequest(`/admin/categories/${id}`, {
+        method: "PATCH",
+        auth: true,
+        body: categoryEdits[id]
+      });
+      await reloadCategories();
+      primeFormState();
+      notify("success", "Category updated.");
+    } catch (err) {
+      error.value = err.message;
+      notify("error", err.message);
+    }
+  };
+
+  const changeCouponsPage = (page) => setPageAndReload(couponFilters, page, reloadCoupons, true);
+  const applyCouponFilters = () => resetAndReload(couponFilters, reloadCoupons, true);
+
+  const createCoupon = async () => {
+    try {
+      await apiRequest("/admin/coupons", {
+        method: "POST",
+        auth: true,
+        body: {
+          code: createCouponForm.code.trim(),
+          description: createCouponForm.description.trim() || null,
+          type: createCouponForm.type,
+          value: Number(createCouponForm.value || 0),
+          maxRedemptions: createCouponForm.maxRedemptions === "" ? null : Number(createCouponForm.maxRedemptions),
+          startsAt: createCouponForm.startsAt || null,
+          expiresAt: createCouponForm.expiresAt || null,
+          isActive: createCouponForm.isActive
+        }
+      });
+      createCouponForm.code = "";
+      createCouponForm.description = "";
+      createCouponForm.type = "PERCENTAGE";
+      createCouponForm.value = 10;
+      createCouponForm.maxRedemptions = "";
+      createCouponForm.startsAt = "";
+      createCouponForm.expiresAt = "";
+      createCouponForm.isActive = true;
+      await reloadCoupons();
+      primeFormState();
+      notify("success", "Coupon created.");
+    } catch (err) {
+      error.value = err.message;
+      notify("error", err.message);
+    }
+  };
+
+  const updateCoupon = async (id) => {
+    try {
+      await apiRequest(`/admin/coupons/${id}`, {
+        method: "PATCH",
+        auth: true,
+        body: {
+          ...couponEdits[id],
+          maxRedemptions: couponEdits[id].maxRedemptions === "" ? null : Number(couponEdits[id].maxRedemptions),
+          startsAt: couponEdits[id].startsAt || null,
+          expiresAt: couponEdits[id].expiresAt || null
+        }
+      });
+      await reloadCoupons();
+      primeFormState();
+      notify("success", "Coupon updated.");
+    } catch (err) {
+      error.value = err.message;
+      notify("error", err.message);
+    }
+  };
+
+  const changeReviewsPage = (page) => setPageAndReload(reviewFilters, page, reloadReviews);
+  const applyReviewFilters = () => resetAndReload(reviewFilters, reloadReviews);
+
+  const updateReview = async (id, isPublished) => {
+    try {
+      await apiRequest(`/admin/reviews/${id}`, {
+        method: "PATCH",
+        auth: true,
+        body: { isPublished }
+      });
+      await reloadReviews();
+      notify("success", isPublished ? "Review published." : "Review hidden.");
+    } catch (err) {
+      error.value = err.message;
+      notify("error", err.message);
+    }
+  };
+
+  const changeNotificationsPage = (page) => setPageAndReload(notificationFilters, page, reloadNotifications);
+  const applyNotificationFilters = () => resetAndReload(notificationFilters, reloadNotifications);
+
+  const createNotification = async () => {
+    try {
+      await apiRequest("/admin/notifications", {
+        method: "POST",
+        auth: true,
+        body: {
+          title: createNotificationForm.title.trim(),
+          message: createNotificationForm.message.trim(),
+          type: createNotificationForm.type,
+          linkUrl: createNotificationForm.linkUrl.trim() || null,
+          broadcast: createNotificationForm.broadcast,
+          userId: createNotificationForm.broadcast ? null : createNotificationForm.userId.trim()
+        }
+      });
+      createNotificationForm.title = "";
+      createNotificationForm.message = "";
+      createNotificationForm.type = "SYSTEM";
+      createNotificationForm.linkUrl = "";
+      createNotificationForm.broadcast = true;
+      createNotificationForm.userId = "";
+      await reloadNotifications();
+      notify("success", "Notification sent.");
+    } catch (err) {
+      error.value = err.message;
+      notify("error", err.message);
+    }
+  };
+
+  const updateNotification = async (id, isRead) => {
+    try {
+      await apiRequest(`/admin/notifications/${id}`, {
+        method: "PATCH",
+        auth: true,
+        body: { isRead }
+      });
+      await reloadNotifications();
+      notify("success", isRead ? "Notification marked as read." : "Notification marked unread.");
+    } catch (err) {
+      error.value = err.message;
+      notify("error", err.message);
+    }
+  };
+
+  const changeAuditLogsPage = (page) => setPageAndReload(auditLogFilters, page, reloadAuditLogs);
+  const applyAuditLogFilters = () => resetAndReload(auditLogFilters, reloadAuditLogs);
+
   onMounted(reload);
 
   return {
@@ -451,25 +726,45 @@ export const useAdminPanel = () => {
     courses,
     learningPaths,
     blogs,
+    categories,
+    coupons,
+    reviews,
+    notifications,
+    auditLogs,
     userEdits,
     orderEdits,
     courseEdits,
     learningPathEdits,
     blogEdits,
+    categoryEdits,
+    couponEdits,
     usersMeta,
     testimonialsMeta,
     ordersMeta,
     coursesMeta,
     learningPathsMeta,
     blogsMeta,
+    categoriesMeta,
+    couponsMeta,
+    reviewsMeta,
+    notificationsMeta,
+    auditLogsMeta,
     userFilters,
     testimonialFilters,
     orderFilters,
     courseFilters,
     learningPathFilters,
     blogFilters,
+    categoryFilters,
+    couponFilters,
+    reviewFilters,
+    notificationFilters,
+    auditLogFilters,
     createLearningPathForm,
     createBlogForm,
+    createCategoryForm,
+    createCouponForm,
+    createNotificationForm,
     reload,
     updateUser,
     updateOrder,
@@ -493,6 +788,23 @@ export const useAdminPanel = () => {
     changeBlogsPage,
     applyBlogFilters,
     createBlog,
-    updateBlog
+    updateBlog,
+    changeCategoriesPage,
+    applyCategoryFilters,
+    createCategory,
+    updateCategory,
+    changeCouponsPage,
+    applyCouponFilters,
+    createCoupon,
+    updateCoupon,
+    changeReviewsPage,
+    applyReviewFilters,
+    updateReview,
+    changeNotificationsPage,
+    applyNotificationFilters,
+    createNotification,
+    updateNotification,
+    changeAuditLogsPage,
+    applyAuditLogFilters
   };
 };

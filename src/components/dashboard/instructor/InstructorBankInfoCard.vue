@@ -5,9 +5,7 @@
         <h3 class="text-sm font-semibold text-slate-900">Bank & Tax Info</h3>
         <p class="text-xs text-slate-500">Configure payout destination.</p>
       </div>
-      <button class="rounded bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800">
-        Add Bank
-      </button>
+      <span class="admin-pill">{{ bankInfo.bankAccount ? "Connected" : "Action Needed" }}</span>
     </div>
 
     <div class="mt-4 grid gap-3 md:grid-cols-2">

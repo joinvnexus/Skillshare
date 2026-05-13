@@ -108,8 +108,50 @@
           @save-blog="updateBlog"
         />
 
-        <AdminReportsCard id="reports" class="scroll-mt-24" v-show="activeTab === 'reports'" />
-        <AdminSettingsCard id="settings" class="scroll-mt-24" v-show="activeTab === 'settings'" />
+        <AdminReportsCard
+          id="reports"
+          class="scroll-mt-24"
+          v-show="activeTab === 'reports'"
+          :reviews="reviews"
+          :reviews-meta="reviewsMeta"
+          :review-filters="reviewFilters"
+          :notifications="notifications"
+          :notifications-meta="notificationsMeta"
+          :notification-filters="notificationFilters"
+          :notification-form="createNotificationForm"
+          :audit-logs="auditLogs"
+          :audit-logs-meta="auditLogsMeta"
+          :audit-log-filters="auditLogFilters"
+          @apply-review-filters="applyReviewFilters"
+          @change-reviews-page="() => {}"
+          @toggle-review="updateReview"
+          @apply-notification-filters="applyNotificationFilters"
+          @create-notification="createNotification"
+          @toggle-notification="updateNotification"
+          @apply-audit-filters="applyAuditLogFilters"
+        />
+        <AdminSettingsCard
+          id="settings"
+          class="scroll-mt-24"
+          v-show="activeTab === 'settings'"
+          :current-user="currentUser"
+          :categories="categories"
+          :category-edits="categoryEdits"
+          :category-filters="categoryFilters"
+          :create-category-form="createCategoryForm"
+          :coupons="coupons"
+          :coupon-edits="couponEdits"
+          :coupon-filters="couponFilters"
+          :create-coupon-form="createCouponForm"
+          @save-profile="saveAdminProfile"
+          @request-email-change="requestAdminEmailChange"
+          @apply-category-filters="applyCategoryFilters"
+          @create-category="createCategory"
+          @save-category="updateCategory"
+          @apply-coupon-filters="applyCouponFilters"
+          @create-coupon="createCoupon"
+          @save-coupon="updateCoupon"
+        />
       </div>
     </section>
   </AdminLayout>
@@ -132,6 +174,7 @@ import AdminSettingsCard from "@/components/dashboard/admin/AdminSettingsCard.vu
 import AdminOverviewCard from "@/components/dashboard/admin/AdminOverviewCard.vue";
 import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
+import { useStore } from "vuex";
 import { useAdminPanel } from "@/composables/useAdminPanel";
 
 const {
@@ -143,25 +186,45 @@ const {
   courses,
   learningPaths,
   blogs,
+  categories,
+  coupons,
+  reviews,
+  notifications,
+  auditLogs,
   userEdits,
   orderEdits,
   courseEdits,
   learningPathEdits,
   blogEdits,
+  categoryEdits,
+  couponEdits,
   usersMeta,
   testimonialsMeta,
   ordersMeta,
   coursesMeta,
   learningPathsMeta,
   blogsMeta,
+  categoriesMeta,
+  couponsMeta,
+  reviewsMeta,
+  notificationsMeta,
+  auditLogsMeta,
   userFilters,
   testimonialFilters,
   orderFilters,
   courseFilters,
   learningPathFilters,
   blogFilters,
+  categoryFilters,
+  couponFilters,
+  reviewFilters,
+  notificationFilters,
+  auditLogFilters,
   createLearningPathForm,
   createBlogForm,
+  createCategoryForm,
+  createCouponForm,
+  createNotificationForm,
   reload,
   updateUser,
   updateOrder,
@@ -185,11 +248,25 @@ const {
   changeBlogsPage,
   applyBlogFilters,
   createBlog,
-  updateBlog
+  updateBlog,
+  applyCategoryFilters,
+  createCategory,
+  updateCategory,
+  applyCouponFilters,
+  createCoupon,
+  updateCoupon,
+  applyReviewFilters,
+  updateReview,
+  applyNotificationFilters,
+  createNotification,
+  updateNotification,
+  applyAuditLogFilters
 } = useAdminPanel();
 
 const route = useRoute();
+const store = useStore();
 const activeTab = computed(() => String(route.query.tab || "overview"));
+const currentUser = computed(() => store.getters["auth/currentUser"]);
 const selectedCourse = ref(null);
 const isCoursePreviewOpen = ref(false);
 const isCourseDecisionOpen = ref(false);
@@ -235,6 +312,15 @@ const submitCourseEdit = async (fields) => {
   if (!selectedCourse.value) return;
   await updateCourseFields(selectedCourse.value.id, fields);
   closeCourseEdit();
+};
+
+const saveAdminProfile = async (payload) => {
+  await store.dispatch("auth/updateProfile", payload);
+};
+
+const requestAdminEmailChange = async (payload) => {
+  if (!payload?.email || !payload?.currentPassword) return;
+  await store.dispatch("auth/updateEmail", payload);
 };
 </script>
 

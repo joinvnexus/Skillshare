@@ -1,7 +1,7 @@
 <template>
   <div class="admin-shell">
     <div class="admin-panel">
-      <div class="flex gap-6">
+      <div class="flex flex-col gap-6 xl:flex-row">
         <AdminSidebar />
         <div class="flex min-h-[calc(100vh-64px)] flex-1 flex-col gap-6">
           <AdminTopbar>
