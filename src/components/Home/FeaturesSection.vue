@@ -1,7 +1,6 @@
 <template>
-  <section class="px-4 py-18">
-    <div class="container mx-auto max-w-7xl space-y-12">
-      <header class="section-shell feature-header relative overflow-hidden rounded-3xl px-6 py-10 text-center sm:px-10">
+  <section class="space-y-10">
+      <header class="feature-header relative overflow-hidden rounded-[32px] px-6 py-10 text-center sm:px-10 sm:py-12 home-surface">
         <div class="pointer-events-none absolute -left-14 top-0 h-40 w-40 rounded-full bg-white/30 blur-2xl"></div>
         <div class="pointer-events-none absolute -right-10 bottom-0 h-44 w-44 rounded-full bg-white/20 blur-2xl"></div>
         <h2 class="relative mb-3 text-3xl font-bold text-white md:text-4xl animate-slide-up">
@@ -21,11 +20,11 @@
       </div>
 
       <div v-else>
-        <div class="mb-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           <article
             v-for="feature in features"
             :key="feature.id"
-            class="section-shell interactive-lift relative overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-8 text-center animate-fade-in"
+            class="interactive-lift relative overflow-hidden rounded-[26px] border border-[var(--line)] bg-white/88 p-7 text-center animate-fade-in shadow-[0_16px_36px_rgba(15,23,42,0.08)] sm:p-8"
           >
             <div class="feature-line absolute left-0 top-0 h-1.5 w-full"></div>
             <div class="mb-6 flex justify-center">
@@ -39,8 +38,8 @@
           </article>
         </div>
 
-        <div class="section-shell path-shell mt-16 rounded-3xl px-6 py-10 sm:px-10">
-          <div class="mb-12 text-center animate-slide-up">
+        <div class="path-shell rounded-[32px] px-5 py-8 sm:px-6 sm:py-10 home-surface">
+          <div class="mb-10 text-center animate-slide-up sm:mb-12">
             <h3 class="mb-3 text-2xl font-bold text-[var(--text)] md:text-3xl">
               Structured <span class="text-[var(--brand-strong)]">Learning Paths</span>
             </h3>
@@ -49,11 +48,11 @@
             </p>
           </div>
 
-          <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             <article
               v-for="path in learningPaths"
               :key="path.id"
-              class="section-shell interactive-lift rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 text-center animate-fade-in"
+              class="interactive-lift rounded-[24px] border border-[var(--line)] bg-white/88 p-6 text-center animate-fade-in shadow-[0_16px_36px_rgba(15,23,42,0.08)]"
             >
               <div class="mb-6 flex justify-center">
                 <div
@@ -74,7 +73,6 @@
           </div>
         </div>
       </div>
-    </div>
   </section>
 </template>
 

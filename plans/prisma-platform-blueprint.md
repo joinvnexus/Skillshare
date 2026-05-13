@@ -1,4 +1,8 @@
-# Prisma Platform Blueprint
+# Eduvera Prisma Platform Blueprint
+
+## Product Name
+
+Recommended platform name: `Eduvera`
 
 ## Goal
 

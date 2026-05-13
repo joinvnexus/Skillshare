@@ -1,7 +1,7 @@
 <template>
-  <section class="px-4 py-16">
-    <div class="section-shell newsletter-shell mx-auto max-w-4xl rounded-3xl p-6 sm:p-10">
-      <div class="mb-8 text-center">
+  <section>
+    <div class="newsletter-shell home-surface rounded-[32px] border border-slate-200/80 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.08)] sm:p-6">
+      <div class="mb-6 text-center sm:mb-8">
         <h2 class="mb-3 text-3xl font-bold text-[var(--text)] md:text-4xl">Stay Updated</h2>
         <p class="mx-auto max-w-2xl text-lg text-[var(--muted)] md:text-xl">
           Subscribe for product updates, new learning paths, and practical guides.
@@ -51,7 +51,7 @@
         </div>
       </form>
 
-      <p class="mt-8 text-center text-sm text-[var(--muted)]">
+      <p class="mt-6 text-center text-sm text-[var(--muted)] sm:mt-8">
         We respect your privacy. Unsubscribe anytime.
       </p>
     </div>

@@ -1,70 +1,63 @@
 <template>
-  <section class="py-12">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <!-- Section Header -->
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-extrabold text-slate-900 sm:text-4xl">
-          <span class="block">Most Popular Courses</span>
-          <span class="block text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-sky-500">
-            Learn what others are taking
-          </span>
+  <section class="home-surface overflow-hidden rounded-[32px] border border-slate-200/80 bg-white/82 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.08)] sm:p-6">
+      <div class="mb-8 sm:mb-10">
+        <p class="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">Popular Right Now</p>
+        <h2 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">
+          High-demand courses with the strongest student pull.
         </h2>
-        <p class="mt-3 max-w-2xl mx-auto text-xl text-slate-500 sm:mt-4">
-          Join thousands of students in our top-rated courses
+        <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+          A cleaner popular shelf with visible pricing, ratings, and category badges built to match the rest of the refreshed homepage.
         </p>
       </div>
 
-      <!-- Loading State -->
       <LoadingSpinner v-if="loading" />
 
-      <!-- Error State -->
       <ErrorState v-else-if="error" :error="error" @retry="fetchPopularCourses" />
 
-      <!-- Courses Grid -->
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        <div 
+      <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div
           v-for="course in popularCourses"
           :key="course.id"
-          class="section-shell interactive-lift overflow-hidden flex flex-col"
+          class="popular-card group flex flex-col overflow-hidden rounded-[26px] border border-slate-200/80 bg-white/88"
         >
-          <!-- Course Image -->
-          <div class="relative h-48 w-full">
-            <img 
-              :src="course.image || '/placeholder-course.jpg'" 
+          <div class="relative h-48 w-full overflow-hidden">
+            <img
+              :src="course.image || fallbackImage"
               :alt="course.title"
-              class="w-full h-full object-cover"
+              class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
             >
-            <!-- Badges -->
-            <div class="absolute top-3 right-3 flex space-x-2">
-              <span v-if="course.isPopular" class="bg-yellow-500 text-white px-2 py-1 rounded-md text-xs font-semibold">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-slate-950/10 to-transparent"></div>
+            <div class="absolute left-3 top-3 flex flex-wrap gap-2">
+              <span v-if="course.isPopular" class="rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-950">
                 Popular
               </span>
-              <span v-if="course.price === 0" class="bg-green-500 text-white px-2 py-1 rounded-md text-xs font-semibold">
-                FREE
+              <span v-if="course.price === 0" class="rounded-full bg-emerald-500 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white">
+                Free
               </span>
+            </div>
+            <div class="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-700">
+              {{ course.category || 'Course' }}
             </div>
           </div>
 
-          <!-- Course Content -->
-          <div class="p-6 flex-grow flex flex-col">
+          <div class="flex flex-grow flex-col p-5">
             <div class="flex-grow">
-              <h3 class="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+              <h3 class="line-clamp-2 text-xl font-semibold text-slate-900">
                 {{ course.title }}
               </h3>
-              <p class="text-gray-600 text-sm mb-3">By {{ course.instructor || 'Unknown Instructor' }}</p>
-              <p class="text-gray-700 text-sm mb-4 line-clamp-2">
+              <p class="mt-2 text-sm font-medium text-slate-600">By {{ course.instructor || 'Unknown Instructor' }}</p>
+              <p class="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">
                 {{ course.description || 'No description available' }}
               </p>
             </div>
 
-            <!-- Rating and Price -->
             <div class="mt-auto">
-              <div class="flex items-center justify-between mb-3">
+              <div class="mb-4 flex items-center justify-between">
                 <div class="flex items-center">
-                  <div class="flex text-yellow-400 mr-1">
+                  <div class="mr-1 flex text-amber-400">
                     <span v-for="star in 5" :key="star">
                       <svg
-                        class="w-4 h-4"
+                        class="h-4 w-4"
                         :class="{ 'text-gray-300': star > Math.round(course.rating || 0) }"
                         fill="currentColor"
                         viewBox="0 0 20 20"
@@ -73,26 +66,25 @@
                       </svg>
                     </span>
                   </div>
-                  <span class="text-gray-600 text-sm">
+                  <span class="text-sm text-slate-600">
                     {{ (course.rating || 0).toFixed(1) }} ({{ course.reviews || 0 }})
                   </span>
                 </div>
-                <span class="text-gray-900 font-semibold">
+                <span class="text-base font-semibold text-slate-900">
                   {{ course.price === 0 ? 'Free' : '$' + course.price }}
                 </span>
               </div>
 
-              <!-- Action Buttons -->
               <div class="flex space-x-2">
                 <router-link
                   :to="`/courses/${course.slug || course.id}`"
-                  class="flex-1 rounded-lg bg-gray-100 px-4 py-2 text-center text-sm text-gray-800 transition-colors hover:bg-gray-200"
+                  class="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-center text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
                 >
                   View Details
                 </router-link>
                 <router-link
                   :to="`/courses/${course.slug || course.id}`"
-                  class="btn-brand flex-1 rounded-lg px-4 py-2 text-center text-sm"
+                  class="btn-brand flex-1 rounded-xl px-4 py-2 text-center text-sm"
                 >
                   Enroll Now
                 </router-link>
@@ -102,8 +94,7 @@
         </div>
       </div>
 
-      <!-- View All Button -->
-      <div class="mt-10 text-center">
+      <div class="mt-8 text-center sm:mt-10">
         <router-link
           to="/courses"
           class="btn-brand inline-flex items-center rounded-xl px-6 py-3 text-base font-medium"
@@ -114,8 +105,6 @@
           </svg>
         </router-link>
       </div>
-    </div>
-
   </section>
 </template>
 
@@ -127,17 +116,20 @@ import ErrorState from '@/components/UI/ErrorState.vue'
 export default {
   name: 'PopularCourses',
   components: { LoadingSpinner, ErrorState },
+  data() {
+    return {
+      fallbackImage: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80'
+    }
+  },
   computed: {
     ...mapState('courses', ['loading', 'error']),
     ...mapGetters('courses', ['getPopularCourses']),
     popularCourses() {
-      return this.getPopularCourses.slice(0, 4) // Show top 4 popular courses
+      return this.getPopularCourses.slice(0, 4)
     }
   },
   methods: {
-    ...mapActions('courses', [
-      'fetchCourses'
-    ]),
+    ...mapActions('courses', ['fetchCourses']),
     fetchPopularCourses() {
       this.fetchCourses()
     }
@@ -151,19 +143,21 @@ export default {
 </script>
 
 <style scoped>
+.popular-card {
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+.popular-card:hover {
+  transform: translateY(-6px);
+  border-color: color-mix(in srgb, var(--brand) 24%, white 76%);
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.14);
+}
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 </style>

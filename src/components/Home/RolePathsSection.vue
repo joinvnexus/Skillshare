@@ -61,7 +61,7 @@
                 :class="card.ctaClass"
               >
                 <span>{{ card.cta.label }}</span>
-                <span aria-hidden="true">→</span>
+                <span aria-hidden="true">&rarr;</span>
               </router-link>
             </article>
           </div>
