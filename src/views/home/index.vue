@@ -2,6 +2,7 @@
   <main id="main-content" class="mx-auto max-w-[1600px] space-y-10 px-2 pb-12">
     <HeroSection />
     <FeaturesSection />
+    <RolePathsSection />
     <FeaturedCourses />
     <InstructorSpotlights />
     <PopularCourses />
@@ -15,6 +16,7 @@
 <script setup>
 import HeroSection from '@/components/Home/HeroSection.vue';
 import FeaturesSection from '@/components/Home/FeaturesSection.vue';
+import RolePathsSection from '@/components/Home/RolePathsSection.vue';
 import InstructorSpotlights from '@/components/Home/InstructorSpotlights.vue';
 import FeaturedCourses from '@/components/Home/FeaturedCourses.vue';
 import PopularCourses from '@/components/Home/PopularCourses.vue';

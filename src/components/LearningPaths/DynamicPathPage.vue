@@ -20,14 +20,14 @@
         <div class="relative grid items-center gap-7 lg:grid-cols-[1.2fr_0.8fr]">
           <div class="space-y-4">
             <span class="inline-flex items-center rounded-full border border-white/40 bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-              {{ levelLabel }}
+              {{ page.levelLabel }}
             </span>
             <h1 class="text-3xl font-bold leading-tight text-white md:text-4xl">{{ path.title }}</h1>
             <p class="max-w-2xl text-white/90">{{ path.description }}</p>
             <div class="flex flex-wrap gap-3 pt-2 text-sm text-white/95">
               <span class="rounded-full bg-white/15 px-3 py-1">{{ path.courses }} Courses</span>
               <span class="rounded-full bg-white/15 px-3 py-1">{{ path.duration }}</span>
-              <span class="rounded-full bg-white/15 px-3 py-1">{{ path.level || levelLabel }}</span>
+              <span class="rounded-full bg-white/15 px-3 py-1">{{ path.level || page.levelLabel }}</span>
             </div>
           </div>
           <img v-if="path.image || path.icon" :src="path.image || path.icon" :alt="path.title" class="h-56 w-full rounded-2xl object-cover shadow-xl" />
@@ -92,66 +92,50 @@
         <h3 class="text-2xl font-bold text-[var(--text)]">Ready to start this path?</h3>
         <p class="mt-2 text-sm text-[var(--muted)]">Get full access to all lessons and guided projects.</p>
         <router-link to="/signup" class="btn-brand mt-5 inline-flex rounded-xl px-7 py-3 text-sm font-semibold text-white">
-          {{ ctaText }}
+          {{ page.ctaText }}
         </router-link>
       </section>
     </div>
   </div>
 </template>
 
-<script>
-import { mapActions, mapState } from "vuex";
-import LoadingSpinner from "@/components/UI/LoadingSpinner.vue";
+<script setup>
+import { computed, watch } from "vue"
+import { useStore } from "vuex"
+import LoadingSpinner from "@/components/UI/LoadingSpinner.vue"
 
-export default {
-  name: "DynamicPathPage",
-  components: { LoadingSpinner },
-  props: {
-    slug: {
-      type: String,
-      required: true
-    },
-    levelLabel: {
-      type: String,
-      default: "Learning Path"
-    },
-    ctaText: {
-      type: String,
-      default: "Start Learning Now"
-    }
-  },
-  computed: {
-    ...mapState("learningPaths", {
-      currentPath: (state) => state.currentPath,
-      isLoading: (state) => state.isLoading,
-      error: (state) => state.error
-    }),
-    path() {
-      return this.currentPath;
-    },
-    isBusy() {
-      return this.isLoading && !this.path;
-    }
-  },
-  created() {
-    this.loadPath();
-  },
-  watch: {
-    slug() {
-      this.loadPath();
-    }
-  },
-  methods: {
-    ...mapActions("learningPaths", ["fetchPathBySlug"]),
-    async loadPath() {
-      try {
-        await this.fetchPathBySlug(this.slug);
-      } catch (_error) {
-        // Store already exposes error state; keep UI responsive without throwing.
-      }
-    }
+const props = defineProps({
+  page: {
+    type: Object,
+    required: true
   }
-};
+})
+
+const store = useStore()
+
+const path = computed(() => store.state.learningPaths.currentPath)
+const isBusy = computed(() => store.state.learningPaths.isLoading && !path.value)
+const error = computed(() => store.state.learningPaths.error)
+
+const loadPath = async (slug) => {
+  if (!slug) {
+    return
+  }
+
+  try {
+    await store.dispatch("learningPaths/fetchPathBySlug", slug)
+  } catch (_error) {
+    // Store already exposes error state; keep UI responsive without throwing.
+  }
+}
+
+watch(
+  () => props.page.slug,
+  (slug) => {
+    loadPath(slug)
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

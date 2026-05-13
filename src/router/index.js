@@ -1,6 +1,21 @@
 import { createRouter, createWebHistory } from "vue-router";
 import store from "../store";
 import HomeView from "../views/home/index.vue";
+import { getLearningPathPage, learningPathPageOrder } from "@/lib/learningPathPages";
+
+const APP_TITLE = "FocusCircle";
+
+const learningPathRoute = (key) => {
+  const page = getLearningPathPage(key);
+
+  return {
+    path: page.path,
+    name: page.name,
+    component: () => import("@/views/learning-paths/LearningPathView.vue"),
+    props: { page },
+    meta: { title: page.title }
+  };
+};
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,57 +24,45 @@ const router = createRouter({
       path: "/",
       name: "home",
       component: HomeView,
+      meta: { title: "Home" }
     },
     {
       path: "/about",
       name: "about",
       component: () => import("../views/about/index.vue"),
+      meta: { title: "About" }
     },
     {
       path: "/courses",
       name: "courses",
       component: () => import("../views/course-list/index.vue"),
+      meta: { title: "Courses" }
     },
     {
       path: "/courses/:id",
       name: "CourseDetail",
       component: () => import("@/views/course-detail/index.vue"),
       props: true,
+      meta: { title: "Course Details" }
     },
-    {
-      path: "/beginner",
-      name: "BeginnerPath",
-      component: () => import("@/views/learning-paths/Beginner.vue"),
-      meta: { title: "Beginner Learning Path" },
-    },
-    {
-      path: "/intermediate",
-      name: "IntermediatePath",
-      component: () => import("@/views/learning-paths/Intermediate.vue"),
-      meta: { title: "Intermediate Learning Path" },
-    },
-    {
-      path: "/advanced",
-      name: "AdvancedPath",
-      component: () => import("@/views/learning-paths/Advanced.vue"),
-      meta: { title: "Advanced Learning Path" },
-    },
+    ...learningPathPageOrder.map(learningPathRoute),
     {
       path: "/search",
       name: "SearchResults",
       component: () => import("@/views/search-results/index.vue"),
+      meta: { title: "Search" }
     },
     {
       path: "/login",
       name: "Login",
       component: () => import("../views/login/index.vue"),
-      meta: { requiresGuest: true },
+      meta: { requiresGuest: true, title: "Login" },
     },
     {
       path: "/signup",
       name: "Signup",
       component: () => import("../views/signup/index.vue"),
-      meta: { requiresGuest: true },
+      meta: { requiresGuest: true, title: "Sign Up" },
     },
     {
       path: "/blog",
@@ -146,6 +149,16 @@ const router = createRouter({
           meta: { title: "Order Details", requiresRole: ["STUDENT"] }
         },
         {
+          path: "settings",
+          name: "DashboardSettings",
+          component: () => import("@/views/dashboard/shared/UserSettings.vue"),
+          meta: { title: "Account Settings" }
+        },
+        {
+          path: "profile",
+          redirect: "/dashboard/settings"
+        },
+        {
           path: "instructor-panel",
           name: "InstructorPanel",
           component: () => import("@/views/dashboard/instructor/InstructorPanel.vue"),
@@ -161,7 +174,11 @@ const router = createRouter({
     },
     {
       path: "/profile",
-      redirect: "/dashboard/instructor-panel"
+      redirect: "/dashboard/settings"
+    },
+    {
+      path: "/:pathMatch(.*)*",
+      redirect: "/"
     }
   ],
   // Scroll behavior to scroll to the top of the page on navigation
@@ -199,6 +216,11 @@ router.beforeEach(async (to, from, next) => {
   } else {
     next();
   }
+});
+
+router.afterEach((to) => {
+  const routeTitle = to.meta?.title;
+  document.title = routeTitle ? `${routeTitle} | ${APP_TITLE}` : APP_TITLE;
 });
 // Set the document title based on the route meta title
 

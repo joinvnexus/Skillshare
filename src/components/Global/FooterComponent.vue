@@ -31,6 +31,9 @@
           />
           <button type="submit" class="btn-brand rounded-lg px-3 py-2 text-sm font-bold">Join</button>
         </form>
+        <p v-if="message" class="mt-2 text-xs" :class="messageType === 'success' ? 'text-emerald-300' : 'text-amber-300'">
+          {{ message }}
+        </p>
       </section>
     </div>
 
@@ -51,12 +54,20 @@ export default {
   data() {
     return {
       email: '',
-      year: new Date().getFullYear()
+      year: new Date().getFullYear(),
+      message: '',
+      messageType: 'success'
     }
   },
   methods: {
     subscribeNewsletter() {
-      alert(`Subscribed: ${this.email}`)
+      if (!this.email.trim()) {
+        this.message = 'Enter an email address.'
+        this.messageType = 'error'
+        return
+      }
+      this.message = 'Thanks. Weekly updates are now queued for this inbox.'
+      this.messageType = 'success'
       this.email = ''
     }
   }

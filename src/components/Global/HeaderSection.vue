@@ -90,31 +90,10 @@
               </button>
               <transition name="fade-slide">
                 <div id="desktop-profile-menu" v-if="isProfileMenuOpen" class="absolute right-0 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
-                  <router-link @click="closeProfileMenu" to="/dashboard" class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">Dashboard</router-link>
-                  <router-link @click="closeProfileMenu" to="/dashboard/profile" class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">Profile</router-link>
-                  <router-link
-                    v-if="isAdmin"
-                    @click="closeProfileMenu"
-                    to="/dashboard/admin-panel"
-                    class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-                  >
-                    Admin Panel
-                  </router-link>
-                  <router-link
-                    v-else-if="isInstructor"
-                    @click="closeProfileMenu"
-                    to="/dashboard/instructor-courses"
-                    class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-                  >
-                    Instructor Courses
-                  </router-link>
-                  <router-link
-                    v-else
-                    @click="closeProfileMenu"
-                    to="/dashboard/orders"
-                    class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-                  >
-                    My Orders
+                  <router-link @click="closeProfileMenu" :to="dashboardHome" class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">Dashboard</router-link>
+                  <router-link @click="closeProfileMenu" :to="accountSettingsPath" class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">Account Settings</router-link>
+                  <router-link @click="closeProfileMenu" :to="primaryRolePath" class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+                    {{ primaryRoleLabel }}
                   </router-link>
                   <button @click="handleLogout" type="button" class="mt-1 block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-red-600 hover:bg-red-50">
                     Logout
@@ -186,25 +165,9 @@
                 <span class="truncate text-sm font-semibold text-slate-800">{{ userName }}</span>
               </div>
               <p class="mb-2 px-3 text-xs font-semibold uppercase tracking-wide text-slate-500">{{ roleLabel }}</p>
-              <router-link @click="closeMobileMenu" to="/dashboard" class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">Dashboard</router-link>
-              <router-link @click="closeMobileMenu" to="/dashboard/profile" class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">Profile</router-link>
-              <router-link
-                v-if="isAdmin"
-                @click="closeMobileMenu"
-                to="/dashboard/admin-panel"
-                class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-              >
-                Admin Panel
-              </router-link>
-              <router-link
-                v-else-if="isInstructor"
-                @click="closeMobileMenu"
-                to="/dashboard/instructor-courses"
-                class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-              >
-                Instructor Courses
-              </router-link>
-              <template v-else>
+              <router-link @click="closeMobileMenu" :to="dashboardHome" class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">Dashboard</router-link>
+              <router-link @click="closeMobileMenu" :to="accountSettingsPath" class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">Account Settings</router-link>
+              <template v-if="isStudent">
                 <router-link @click="closeMobileMenu" to="/dashboard/wishlist" class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
                   Wishlist ({{ wishlistCount }})
                 </router-link>
@@ -215,6 +178,9 @@
                   Orders
                 </router-link>
               </template>
+              <router-link v-else @click="closeMobileMenu" :to="primaryRolePath" class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+                {{ primaryRoleLabel }}
+              </router-link>
               <button @click="handleLogout" type="button" class="mt-1 block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-red-600 hover:bg-red-50">
                 Logout
               </button>
@@ -255,6 +221,22 @@ const isInstructor = computed(() => role.value === 'INSTRUCTOR')
 const isAdmin = computed(() => role.value === 'ADMIN')
 const cartCount = computed(() => store.getters['cart/cartCount'])
 const wishlistCount = computed(() => store.getters['wishlist/wishlistCount'])
+const dashboardHome = computed(() => {
+  if (isAdmin.value) return '/dashboard/admin-panel'
+  if (isInstructor.value) return '/dashboard/instructor-panel'
+  return '/dashboard'
+})
+const accountSettingsPath = '/dashboard/settings'
+const primaryRolePath = computed(() => {
+  if (isAdmin.value) return '/dashboard/admin-panel'
+  if (isInstructor.value) return '/dashboard/instructor-panel?tab=courses'
+  return '/dashboard/orders'
+})
+const primaryRoleLabel = computed(() => {
+  if (isAdmin.value) return 'Admin Panel'
+  if (isInstructor.value) return 'Course Studio'
+  return 'My Orders'
+})
 const primaryLinks = [
   { label: 'Home', to: '/' },
   { label: 'Courses', to: '/courses' },
