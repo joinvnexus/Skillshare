@@ -221,7 +221,8 @@
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import { apiRequest } from '@/lib/api'
+import { instructorApi } from '@/modules/dashboard-instructor/api/instructorApi'
+import { resolveErrorMessage } from '@/shared/services/apiClient'
 import { isAvatarUploadConfigured, uploadProfileAvatar } from '@/lib/storage'
 import { validateEmail, validateOptionalUrl, validatePassword, validateTrimmedLength } from '@/lib/validation'
 
@@ -292,8 +293,7 @@ const loadInstructorProfile = async () => {
   instructorLoading.value = true
   instructorFormError.value = ''
   try {
-    const response = await apiRequest('/instructor/me/profile', { auth: true })
-    const data = response.data || {}
+    const data = await instructorApi.getProfile()
     instructorForm.value = {
       title: data.title || '',
       bio: data.bio || '',
@@ -305,7 +305,7 @@ const loadInstructorProfile = async () => {
       youtubeUrl: data.youtubeUrl || ''
     }
   } catch (error) {
-    instructorFormError.value = error.message
+    instructorFormError.value = resolveErrorMessage(error)
   } finally {
     instructorLoading.value = false
   }
@@ -451,22 +451,18 @@ const saveInstructorProfile = async () => {
       .map((item) => item.trim())
       .filter(Boolean)
 
-    await apiRequest('/instructor/me/profile', {
-      method: 'PATCH',
-      auth: true,
-      body: {
-        title: instructorForm.value.title.trim(),
-        bio: instructorForm.value.bio.trim(),
-        expertise,
-        websiteUrl: instructorForm.value.websiteUrl?.trim() || null,
-        linkedinUrl: instructorForm.value.linkedinUrl?.trim() || null,
-        twitterUrl: instructorForm.value.twitterUrl?.trim() || null,
-        githubUrl: instructorForm.value.githubUrl?.trim() || null,
-        youtubeUrl: instructorForm.value.youtubeUrl?.trim() || null
-      }
+    await instructorApi.updateProfile({
+      title: instructorForm.value.title.trim(),
+      bio: instructorForm.value.bio.trim(),
+      expertise,
+      websiteUrl: instructorForm.value.websiteUrl?.trim() || null,
+      linkedinUrl: instructorForm.value.linkedinUrl?.trim() || null,
+      twitterUrl: instructorForm.value.twitterUrl?.trim() || null,
+      githubUrl: instructorForm.value.githubUrl?.trim() || null,
+      youtubeUrl: instructorForm.value.youtubeUrl?.trim() || null
     })
   } catch (error) {
-    instructorFormError.value = error.message
+    instructorFormError.value = resolveErrorMessage(error)
   } finally {
     instructorLoading.value = false
   }

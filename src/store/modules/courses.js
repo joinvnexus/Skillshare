@@ -1,5 +1,7 @@
-import { apiRequest } from '@/lib/api'
 import { normalizeCourse } from '@/lib/normalizers'
+import { catalogApi } from '@/modules/catalog/api/catalogApi'
+import { courseApi } from '@/modules/course/api/courseApi'
+import { resolveErrorMessage } from '@/shared/services/apiClient'
 
 const state = {
   allCourses: [],
@@ -31,7 +33,7 @@ const actions = {
   async fetchCourses({ commit, dispatch }) {
     try {
       commit('ui/SET_LOADING', true, { root: true })
-      const response = await apiRequest('/courses')
+      const response = await catalogApi.listCourses()
       const courses = response.data.map(normalizeCourse)
 
       commit('SET_COURSES', courses)
@@ -41,7 +43,7 @@ const actions = {
 
       return courses
     } catch (error) {
-      commit('ui/SET_ERROR', error.message, { root: true })
+      commit('ui/SET_ERROR', resolveErrorMessage(error), { root: true })
       throw error
     } finally {
       commit('ui/SET_LOADING', false, { root: true })
@@ -51,8 +53,8 @@ const actions = {
   async fetchCourseById({ commit, state }, courseId) {
     try {
       commit('ui/SET_LOADING', true, { root: true })
-      const response = await apiRequest(`/courses/${courseId}`)
-      const course = normalizeCourse(response.data)
+      const response = await courseApi.getCourseById(courseId)
+      const course = normalizeCourse(response.course)
       const relatedCourses = (response.relatedCourses || []).map(normalizeCourse)
 
       commit('SET_CURRENT_COURSE', course)
@@ -69,7 +71,7 @@ const actions = {
 
       return course
     } catch (error) {
-      commit('ui/SET_ERROR', error.message, { root: true })
+      commit('ui/SET_ERROR', resolveErrorMessage(error), { root: true })
       throw error
     } finally {
       commit('ui/SET_LOADING', false, { root: true })
@@ -79,10 +81,10 @@ const actions = {
   async searchCourses({ commit }, query) {
     try {
       commit('ui/SET_LOADING', true, { root: true })
-      const response = await apiRequest(`/courses?search=${encodeURIComponent(query)}`)
+      const response = await catalogApi.searchCourses(query)
       return response.data.map(normalizeCourse)
     } catch (error) {
-      commit('ui/SET_ERROR', error.message, { root: true })
+      commit('ui/SET_ERROR', resolveErrorMessage(error), { root: true })
       throw error
     } finally {
       commit('ui/SET_LOADING', false, { root: true })
@@ -92,10 +94,10 @@ const actions = {
   async fetchCoursesByCategory({ commit }, category) {
     try {
       commit('ui/SET_LOADING', true, { root: true })
-      const response = await apiRequest(`/courses?category=${encodeURIComponent(category)}`)
+      const response = await catalogApi.listCoursesByCategory(category)
       return response.data.map(normalizeCourse)
     } catch (error) {
-      commit('ui/SET_ERROR', error.message, { root: true })
+      commit('ui/SET_ERROR', resolveErrorMessage(error), { root: true })
       throw error
     } finally {
       commit('ui/SET_LOADING', false, { root: true })

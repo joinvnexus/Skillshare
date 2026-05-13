@@ -19,35 +19,35 @@
 ## Phase 1: Frontend Structure
 
 - [ ] Create `src/layouts`
-- [ ] Create `src/modules/auth`
-- [ ] Create `src/modules/catalog`
-- [ ] Create `src/modules/course`
-- [ ] Create `src/modules/checkout`
-- [ ] Create `src/modules/enrollment`
-- [ ] Create `src/modules/dashboard-student`
-- [ ] Create `src/modules/dashboard-instructor`
-- [ ] Create `src/modules/dashboard-admin`
-- [ ] Create `src/modules/blog`
+- [x] Create `src/modules/auth`
+- [x] Create `src/modules/catalog`
+- [x] Create `src/modules/course`
+- [x] Create `src/modules/checkout`
+- [x] Create `src/modules/enrollment`
+- [x] Create `src/modules/dashboard-student`
+- [x] Create `src/modules/dashboard-instructor`
+- [x] Create `src/modules/dashboard-admin`
+- [x] Create `src/modules/blog`
 - [ ] Create `src/modules/learning-paths`
 - [ ] Create `src/modules/notifications`
 - [ ] Create `src/shared/ui`
-- [ ] Create `src/shared/services`
-- [ ] Create `src/shared/utils`
+- [x] Create `src/shared/services`
+- [x] Create `src/shared/utils`
 - [ ] Move page-specific components into domain folders
 - [ ] Remove full-page layout logic from low-level components
 
 ## Phase 2: API Client Layer
 
-- [ ] Keep `src/lib/api.js` as the low-level transport only
-- [ ] Add `catalogApi`
-- [ ] Add `courseApi`
-- [ ] Add `checkoutApi`
-- [ ] Add `enrollmentApi`
-- [ ] Add `studentApi`
-- [ ] Add `instructorApi`
-- [ ] Add `adminApi`
-- [ ] Standardize API error mapping for frontend consumers
-- [ ] Standardize pagination/meta parsing on the frontend
+- [x] Keep `src/lib/api.js` as the low-level transport only
+- [x] Add `catalogApi`
+- [x] Add `courseApi`
+- [x] Add `checkoutApi`
+- [x] Add `enrollmentApi`
+- [x] Add `studentApi`
+- [x] Add `instructorApi`
+- [x] Add `adminApi`
+- [x] Standardize API error mapping for frontend consumers
+- [x] Standardize pagination/meta parsing on the frontend
 
 ## Phase 3: Store Refactor
 

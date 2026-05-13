@@ -1,5 +1,6 @@
-import { apiRequest } from "@/lib/api";
 import { normalizeCourse } from "@/lib/normalizers";
+import { studentApi } from "@/modules/dashboard-student/api/studentApi";
+import { resolveErrorMessage } from "@/shared/services/apiClient";
 
 const state = {
   items: [],
@@ -32,12 +33,12 @@ const actions = {
     try {
       commit("SET_LOADING", true);
       commit("SET_ERROR", null);
-      const response = await apiRequest("/student/me/wishlist", { auth: true });
+      const response = await studentApi.listWishlist();
       const courses = (response.data || []).map((item) => normalizeCourse(item.course));
       commit("SET_ITEMS", courses);
       return courses;
     } catch (error) {
-      commit("SET_ERROR", error.message);
+      commit("SET_ERROR", resolveErrorMessage(error));
       throw error;
     } finally {
       commit("SET_LOADING", false);
@@ -50,16 +51,12 @@ const actions = {
 
     try {
       commit("SET_ERROR", null);
-      await apiRequest("/student/me/wishlist", {
-        method: "POST",
-        auth: true,
-        body: { courseId }
-      });
+      await studentApi.addWishlistItem(courseId);
       if (course?.id) {
         commit("ADD_ITEM", course);
       }
     } catch (error) {
-      commit("SET_ERROR", error.message);
+      commit("SET_ERROR", resolveErrorMessage(error));
       throw error;
     }
   },
@@ -68,13 +65,10 @@ const actions = {
     if (!courseId) return;
     try {
       commit("SET_ERROR", null);
-      await apiRequest(`/student/me/wishlist/${courseId}`, {
-        method: "DELETE",
-        auth: true
-      });
+      await studentApi.removeWishlistItem(courseId);
       commit("REMOVE_ITEM", courseId);
     } catch (error) {
-      commit("SET_ERROR", error.message);
+      commit("SET_ERROR", resolveErrorMessage(error));
       throw error;
     }
   }

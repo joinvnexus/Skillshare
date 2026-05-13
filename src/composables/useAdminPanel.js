@@ -1,6 +1,7 @@
 import { onMounted, reactive, ref } from "vue";
 import { useStore } from "vuex";
-import { apiRequest } from "@/lib/api";
+import { adminApi } from "@/modules/dashboard-admin/api/adminApi";
+import { resolveErrorMessage } from "@/shared/services/apiClient";
 
 export const useAdminPanel = () => {
   const store = useStore();
@@ -173,78 +174,68 @@ export const useAdminPanel = () => {
     }
   };
 
-  const buildParams = (filters) => {
-    const params = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && String(value).trim() !== "") {
-        params.set(key, String(value));
-      }
-    });
-    return params.toString();
-  };
-
   const reloadUsers = async () => {
-    const usersRes = await apiRequest(`/admin/users?${buildParams(userFilters)}`, { auth: true });
+    const usersRes = await adminApi.listUsers(userFilters);
     users.value = usersRes.data || [];
     usersMeta.value = usersRes.meta || { page: 1, totalPages: 1, total: 0 };
   };
 
   const reloadTestimonials = async () => {
-    const testimonialsRes = await apiRequest(`/admin/testimonials?${buildParams(testimonialFilters)}`, { auth: true });
+    const testimonialsRes = await adminApi.listTestimonials(testimonialFilters);
     testimonials.value = testimonialsRes.data || [];
     testimonialsMeta.value = testimonialsRes.meta || { page: 1, totalPages: 1, total: 0 };
   };
 
   const reloadOrders = async () => {
-    const ordersRes = await apiRequest(`/admin/orders?${buildParams(orderFilters)}`, { auth: true });
+    const ordersRes = await adminApi.listOrders(orderFilters);
     orders.value = ordersRes.data || [];
     ordersMeta.value = ordersRes.meta || { page: 1, totalPages: 1, total: 0 };
   };
 
   const reloadCourses = async () => {
-    const response = await apiRequest(`/admin/courses?${buildParams(courseFilters)}`, { auth: true });
+    const response = await adminApi.listCourses(courseFilters);
     courses.value = response.data || [];
     coursesMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
   };
 
   const reloadLearningPaths = async () => {
-    const response = await apiRequest(`/admin/learning-paths?${buildParams(learningPathFilters)}`, { auth: true });
+    const response = await adminApi.listLearningPaths(learningPathFilters);
     learningPaths.value = response.data || [];
     learningPathsMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
   };
 
   const reloadBlogs = async () => {
-    const response = await apiRequest(`/admin/blogs?${buildParams(blogFilters)}`, { auth: true });
+    const response = await adminApi.listBlogs(blogFilters);
     blogs.value = response.data || [];
     blogsMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
   };
 
   const reloadCategories = async () => {
-    const response = await apiRequest(`/admin/categories?${buildParams(categoryFilters)}`, { auth: true });
+    const response = await adminApi.listCategories(categoryFilters);
     categories.value = response.data || [];
     categoriesMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
   };
 
   const reloadCoupons = async () => {
-    const response = await apiRequest(`/admin/coupons?${buildParams(couponFilters)}`, { auth: true });
+    const response = await adminApi.listCoupons(couponFilters);
     coupons.value = response.data || [];
     couponsMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
   };
 
   const reloadReviews = async () => {
-    const response = await apiRequest(`/admin/reviews?${buildParams(reviewFilters)}`, { auth: true });
+    const response = await adminApi.listReviews(reviewFilters);
     reviews.value = response.data || [];
     reviewsMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
   };
 
   const reloadNotifications = async () => {
-    const response = await apiRequest(`/admin/notifications?${buildParams(notificationFilters)}`, { auth: true });
+    const response = await adminApi.listNotifications(notificationFilters);
     notifications.value = response.data || [];
     notificationsMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
   };
 
   const reloadAuditLogs = async () => {
-    const response = await apiRequest(`/admin/audit-logs?${buildParams(auditLogFilters)}`, { auth: true });
+    const response = await adminApi.listAuditLogs(auditLogFilters);
     auditLogs.value = response.data || [];
     auditLogsMeta.value = response.meta || { page: 1, totalPages: 1, total: 0 };
   };
@@ -268,7 +259,7 @@ export const useAdminPanel = () => {
       ]);
       primeFormState();
     } catch (err) {
-      error.value = err.message;
+      error.value = resolveErrorMessage(err);
     } finally {
       loading.value = false;
     }
@@ -276,31 +267,23 @@ export const useAdminPanel = () => {
 
   const updateUser = async (userId) => {
     try {
-      await apiRequest(`/admin/users/${userId}`, {
-        method: "PATCH",
-        auth: true,
-        body: userEdits[userId]
-      });
+      await adminApi.updateUser(userId, userEdits[userId]);
       await reloadUsers();
       notify("success", "User updated.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
   const updateOrder = async (orderId) => {
     try {
-      await apiRequest(`/admin/orders/${orderId}`, {
-        method: "PATCH",
-        auth: true,
-        body: orderEdits[orderId]
-      });
+      await adminApi.updateOrder(orderId, orderEdits[orderId]);
       await reloadOrders();
       notify("success", "Order updated.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
@@ -311,17 +294,13 @@ export const useAdminPanel = () => {
         notify("error", "Select a status first.");
         return;
       }
-      await apiRequest(`/admin/courses/${courseId}/status`, {
-        method: "PATCH",
-        auth: true,
-        body: { status }
-      });
+      await adminApi.updateCourseStatus(courseId, { status });
       await reloadCourses();
       primeFormState();
       notify("success", "Course status updated.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
@@ -333,68 +312,52 @@ export const useAdminPanel = () => {
       return;
     }
     try {
-      await apiRequest(`/admin/courses/${courseId}/status`, {
-        method: "PATCH",
-        auth: true,
-        body: { status, note }
-      });
+      await adminApi.updateCourseStatus(courseId, { status, note });
       await reloadCourses();
       primeFormState();
       notify("success", "Course decision saved.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
   const updateCourseFields = async (courseId, fields) => {
     try {
-      await apiRequest(`/admin/courses/${courseId}`, {
-        method: "PATCH",
-        auth: true,
-        body: {
-          title: fields.title,
-          price: fields.price === "" ? null : Number(fields.price),
-          salePrice: fields.salePrice === "" ? null : Number(fields.salePrice),
-          thumbnailUrl: fields.thumbnailUrl || null
-        }
+      await adminApi.updateCourse(courseId, {
+        title: fields.title,
+        price: fields.price === "" ? null : Number(fields.price),
+        salePrice: fields.salePrice === "" ? null : Number(fields.salePrice),
+        thumbnailUrl: fields.thumbnailUrl || null
       });
       await reloadCourses();
       primeFormState();
       notify("success", "Course updated.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
   const approveTestimonial = async (id) => {
     try {
-      await apiRequest(`/admin/testimonials/${id}`, {
-        method: "PATCH",
-        auth: true,
-        body: { isApproved: true }
-      });
+      await adminApi.updateTestimonial(id, { isApproved: true });
       await reloadTestimonials();
       notify("success", "Testimonial approved.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
   const toggleFeatured = async (item) => {
     try {
-      await apiRequest(`/admin/testimonials/${item.id}`, {
-        method: "PATCH",
-        auth: true,
-        body: { isFeatured: !item.isFeatured }
-      });
+      await adminApi.updateTestimonial(item.id, { isFeatured: !item.isFeatured });
       await reloadTestimonials();
       notify("success", item.isFeatured ? "Testimonial unfeatured." : "Testimonial featured.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
@@ -431,24 +394,20 @@ export const useAdminPanel = () => {
 
   const createLearningPath = async () => {
     try {
-      await apiRequest("/admin/learning-paths", {
-        method: "POST",
-        auth: true,
-        body: {
-          slug: createLearningPathForm.slug.trim(),
-          title: createLearningPathForm.title.trim(),
-          description: createLearningPathForm.description.trim(),
-          estimatedDuration: createLearningPathForm.estimatedDuration.trim(),
-          level: createLearningPathForm.level,
-          icon: createLearningPathForm.icon.trim() || null,
-          imageUrl: createLearningPathForm.imageUrl.trim() || null,
-          features: parseList(createLearningPathForm.featuresText),
-          skills: parseList(createLearningPathForm.skillsText),
-          projects: parseJson(createLearningPathForm.projectsJson),
-          displayOrder: Number(createLearningPathForm.displayOrder || 0),
-          isPublished: createLearningPathForm.isPublished,
-          isFeatured: createLearningPathForm.isFeatured
-        }
+      await adminApi.createLearningPath({
+        slug: createLearningPathForm.slug.trim(),
+        title: createLearningPathForm.title.trim(),
+        description: createLearningPathForm.description.trim(),
+        estimatedDuration: createLearningPathForm.estimatedDuration.trim(),
+        level: createLearningPathForm.level,
+        icon: createLearningPathForm.icon.trim() || null,
+        imageUrl: createLearningPathForm.imageUrl.trim() || null,
+        features: parseList(createLearningPathForm.featuresText),
+        skills: parseList(createLearningPathForm.skillsText),
+        projects: parseJson(createLearningPathForm.projectsJson),
+        displayOrder: Number(createLearningPathForm.displayOrder || 0),
+        isPublished: createLearningPathForm.isPublished,
+        isFeatured: createLearningPathForm.isFeatured
       });
       createLearningPathForm.slug = "";
       createLearningPathForm.title = "";
@@ -467,8 +426,8 @@ export const useAdminPanel = () => {
       primeFormState();
       notify("success", "Learning path created.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
@@ -483,17 +442,13 @@ export const useAdminPanel = () => {
       delete payload.featuresText;
       delete payload.skillsText;
       delete payload.projectsJson;
-      await apiRequest(`/admin/learning-paths/${id}`, {
-        method: "PATCH",
-        auth: true,
-        body: payload
-      });
+      await adminApi.updateLearningPath(id, payload);
       await reloadLearningPaths();
       primeFormState();
       notify("success", "Learning path updated.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
@@ -502,17 +457,13 @@ export const useAdminPanel = () => {
 
   const createBlog = async () => {
     try {
-      await apiRequest("/admin/blogs", {
-        method: "POST",
-        auth: true,
-        body: {
-          title: createBlogForm.title.trim(),
-          slug: createBlogForm.slug.trim(),
-          snippet: createBlogForm.snippet.trim(),
-          content: createBlogForm.content.trim(),
-          status: createBlogForm.status,
-          isFeatured: createBlogForm.isFeatured
-        }
+      await adminApi.createBlog({
+        title: createBlogForm.title.trim(),
+        slug: createBlogForm.slug.trim(),
+        snippet: createBlogForm.snippet.trim(),
+        content: createBlogForm.content.trim(),
+        status: createBlogForm.status,
+        isFeatured: createBlogForm.isFeatured
       });
       createBlogForm.title = "";
       createBlogForm.slug = "";
@@ -524,24 +475,20 @@ export const useAdminPanel = () => {
       primeFormState();
       notify("success", "Blog created.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
   const updateBlog = async (id) => {
     try {
-      await apiRequest(`/admin/blogs/${id}`, {
-        method: "PATCH",
-        auth: true,
-        body: blogEdits[id]
-      });
+      await adminApi.updateBlog(id, blogEdits[id]);
       await reloadBlogs();
       primeFormState();
       notify("success", "Blog updated.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
@@ -550,16 +497,12 @@ export const useAdminPanel = () => {
 
   const createCategory = async () => {
     try {
-      await apiRequest("/admin/categories", {
-        method: "POST",
-        auth: true,
-        body: {
-          name: createCategoryForm.name.trim(),
-          slug: createCategoryForm.slug.trim(),
-          description: createCategoryForm.description.trim() || null,
-          imageUrl: createCategoryForm.imageUrl.trim() || null,
-          displayOrder: Number(createCategoryForm.displayOrder || 0)
-        }
+      await adminApi.createCategory({
+        name: createCategoryForm.name.trim(),
+        slug: createCategoryForm.slug.trim(),
+        description: createCategoryForm.description.trim() || null,
+        imageUrl: createCategoryForm.imageUrl.trim() || null,
+        displayOrder: Number(createCategoryForm.displayOrder || 0)
       });
       createCategoryForm.name = "";
       createCategoryForm.slug = "";
@@ -570,24 +513,20 @@ export const useAdminPanel = () => {
       primeFormState();
       notify("success", "Category created.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
   const updateCategory = async (id) => {
     try {
-      await apiRequest(`/admin/categories/${id}`, {
-        method: "PATCH",
-        auth: true,
-        body: categoryEdits[id]
-      });
+      await adminApi.updateCategory(id, categoryEdits[id]);
       await reloadCategories();
       primeFormState();
       notify("success", "Category updated.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
@@ -596,19 +535,15 @@ export const useAdminPanel = () => {
 
   const createCoupon = async () => {
     try {
-      await apiRequest("/admin/coupons", {
-        method: "POST",
-        auth: true,
-        body: {
-          code: createCouponForm.code.trim(),
-          description: createCouponForm.description.trim() || null,
-          type: createCouponForm.type,
-          value: Number(createCouponForm.value || 0),
-          maxRedemptions: createCouponForm.maxRedemptions === "" ? null : Number(createCouponForm.maxRedemptions),
-          startsAt: createCouponForm.startsAt || null,
-          expiresAt: createCouponForm.expiresAt || null,
-          isActive: createCouponForm.isActive
-        }
+      await adminApi.createCoupon({
+        code: createCouponForm.code.trim(),
+        description: createCouponForm.description.trim() || null,
+        type: createCouponForm.type,
+        value: Number(createCouponForm.value || 0),
+        maxRedemptions: createCouponForm.maxRedemptions === "" ? null : Number(createCouponForm.maxRedemptions),
+        startsAt: createCouponForm.startsAt || null,
+        expiresAt: createCouponForm.expiresAt || null,
+        isActive: createCouponForm.isActive
       });
       createCouponForm.code = "";
       createCouponForm.description = "";
@@ -622,29 +557,25 @@ export const useAdminPanel = () => {
       primeFormState();
       notify("success", "Coupon created.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
   const updateCoupon = async (id) => {
     try {
-      await apiRequest(`/admin/coupons/${id}`, {
-        method: "PATCH",
-        auth: true,
-        body: {
-          ...couponEdits[id],
-          maxRedemptions: couponEdits[id].maxRedemptions === "" ? null : Number(couponEdits[id].maxRedemptions),
-          startsAt: couponEdits[id].startsAt || null,
-          expiresAt: couponEdits[id].expiresAt || null
-        }
+      await adminApi.updateCoupon(id, {
+        ...couponEdits[id],
+        maxRedemptions: couponEdits[id].maxRedemptions === "" ? null : Number(couponEdits[id].maxRedemptions),
+        startsAt: couponEdits[id].startsAt || null,
+        expiresAt: couponEdits[id].expiresAt || null
       });
       await reloadCoupons();
       primeFormState();
       notify("success", "Coupon updated.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
@@ -653,16 +584,12 @@ export const useAdminPanel = () => {
 
   const updateReview = async (id, isPublished) => {
     try {
-      await apiRequest(`/admin/reviews/${id}`, {
-        method: "PATCH",
-        auth: true,
-        body: { isPublished }
-      });
+      await adminApi.updateReview(id, { isPublished });
       await reloadReviews();
       notify("success", isPublished ? "Review published." : "Review hidden.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
@@ -671,17 +598,13 @@ export const useAdminPanel = () => {
 
   const createNotification = async () => {
     try {
-      await apiRequest("/admin/notifications", {
-        method: "POST",
-        auth: true,
-        body: {
-          title: createNotificationForm.title.trim(),
-          message: createNotificationForm.message.trim(),
-          type: createNotificationForm.type,
-          linkUrl: createNotificationForm.linkUrl.trim() || null,
-          broadcast: createNotificationForm.broadcast,
-          userId: createNotificationForm.broadcast ? null : createNotificationForm.userId.trim()
-        }
+      await adminApi.createNotification({
+        title: createNotificationForm.title.trim(),
+        message: createNotificationForm.message.trim(),
+        type: createNotificationForm.type,
+        linkUrl: createNotificationForm.linkUrl.trim() || null,
+        broadcast: createNotificationForm.broadcast,
+        userId: createNotificationForm.broadcast ? null : createNotificationForm.userId.trim()
       });
       createNotificationForm.title = "";
       createNotificationForm.message = "";
@@ -692,23 +615,19 @@ export const useAdminPanel = () => {
       await reloadNotifications();
       notify("success", "Notification sent.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 
   const updateNotification = async (id, isRead) => {
     try {
-      await apiRequest(`/admin/notifications/${id}`, {
-        method: "PATCH",
-        auth: true,
-        body: { isRead }
-      });
+      await adminApi.updateNotification(id, { isRead });
       await reloadNotifications();
       notify("success", isRead ? "Notification marked as read." : "Notification marked unread.");
     } catch (err) {
-      error.value = err.message;
-      notify("error", err.message);
+      error.value = resolveErrorMessage(err);
+      notify("error", error.value);
     }
   };
 

@@ -245,7 +245,8 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-import { apiRequest } from "@/lib/api";
+import { instructorApi } from "@/modules/dashboard-instructor/api/instructorApi";
+import { resolveErrorMessage } from "@/shared/services/apiClient";
 import { validateCourseDraft, validateTrimmedLength } from "@/lib/validation";
 import DashboardState from "@/components/dashboard/DashboardState.vue";
 
@@ -338,11 +339,10 @@ const loadStudio = async (courseId) => {
   studioLoading.value = true;
   formError.value = "";
   try {
-    const response = await apiRequest(`/instructor/courses/${courseId}/studio`, { auth: true });
-    currentStudio.value = response.data || { sections: [] };
+    currentStudio.value = await instructorApi.getCourseStudio(courseId);
     hydrateLessonDrafts();
   } catch (err) {
-    error.value = err.message;
+    error.value = resolveErrorMessage(err);
   } finally {
     studioLoading.value = false;
   }
@@ -362,13 +362,13 @@ const reload = async () => {
   error.value = null;
   formError.value = "";
   try {
-    const response = await apiRequest("/instructor/courses", { auth: true });
+    const response = await instructorApi.listCourses();
     courses.value = response.data || [];
     if (expandedStudioCourseId.value) {
       await loadStudio(expandedStudioCourseId.value);
     }
   } catch (err) {
-    error.value = err.message;
+    error.value = resolveErrorMessage(err);
   } finally {
     loading.value = false;
   }
@@ -389,17 +389,13 @@ const createCourse = async () => {
     return;
   }
   try {
-    await apiRequest("/instructor/courses", {
-      method: "POST",
-      auth: true,
-      body: {
-        ...createForm.value,
-        tags: parseList(createForm.value.tagsText),
-        features: parseList(createForm.value.featuresText),
-        prerequisites: parseList(createForm.value.prerequisitesText),
-        salePrice: createForm.value.salePrice === "" ? null : Number(createForm.value.salePrice),
-        categoryId: createForm.value.categoryId || null
-      }
+    await instructorApi.createCourse({
+      ...createForm.value,
+      tags: parseList(createForm.value.tagsText),
+      features: parseList(createForm.value.featuresText),
+      prerequisites: parseList(createForm.value.prerequisitesText),
+      salePrice: createForm.value.salePrice === "" ? null : Number(createForm.value.salePrice),
+      categoryId: createForm.value.categoryId || null
     });
     createForm.value = {
       slug: "",
@@ -426,7 +422,7 @@ const createCourse = async () => {
     };
     await reload();
   } catch (err) {
-    error.value = err.message;
+    error.value = resolveErrorMessage(err);
   } finally {
     actionLoading.value = false;
   }
@@ -474,22 +470,18 @@ const saveEdit = async (courseId) => {
     return;
   }
   try {
-    await apiRequest(`/instructor/courses/${courseId}`, {
-      method: "PATCH",
-      auth: true,
-      body: {
-        ...editForm.value,
-        tags: parseList(editForm.value.tagsText),
-        features: parseList(editForm.value.featuresText),
-        prerequisites: parseList(editForm.value.prerequisitesText),
-        salePrice: editForm.value.salePrice === "" ? null : Number(editForm.value.salePrice),
-        categoryId: editForm.value.categoryId || null
-      }
+    await instructorApi.updateCourse(courseId, {
+      ...editForm.value,
+      tags: parseList(editForm.value.tagsText),
+      features: parseList(editForm.value.featuresText),
+      prerequisites: parseList(editForm.value.prerequisitesText),
+      salePrice: editForm.value.salePrice === "" ? null : Number(editForm.value.salePrice),
+      categoryId: editForm.value.categoryId || null
     });
     closeEdit();
     await reload();
   } catch (err) {
-    error.value = err.message;
+    error.value = resolveErrorMessage(err);
   } finally {
     actionLoading.value = false;
   }
@@ -497,26 +489,19 @@ const saveEdit = async (courseId) => {
 
 const setStatus = async (courseId, status) => {
   try {
-    await apiRequest(`/instructor/courses/${courseId}/status`, {
-      method: "PATCH",
-      auth: true,
-      body: { status }
-    });
+    await instructorApi.updateCourseStatus(courseId, { status });
     await reload();
   } catch (err) {
-    error.value = err.message;
+    error.value = resolveErrorMessage(err);
   }
 };
 
 const deleteCourse = async (courseId) => {
   try {
-    await apiRequest(`/instructor/courses/${courseId}`, {
-      method: "DELETE",
-      auth: true
-    });
+    await instructorApi.deleteCourse(courseId);
     await reload();
   } catch (err) {
-    error.value = err.message;
+    error.value = resolveErrorMessage(err);
   }
 };
 
@@ -526,18 +511,14 @@ const addSection = async (courseId) => {
 
   actionLoading.value = true;
   try {
-    await apiRequest(`/instructor/courses/${courseId}/sections`, {
-      method: "POST",
-      auth: true,
-      body: {
-        title: studioSectionForm.value.title.trim(),
-        description: studioSectionForm.value.description?.trim() || ""
-      }
+    await instructorApi.createSection(courseId, {
+      title: studioSectionForm.value.title.trim(),
+      description: studioSectionForm.value.description?.trim() || ""
     });
     studioSectionForm.value = { title: "", description: "" };
     await loadStudio(courseId);
   } catch (err) {
-    error.value = err.message;
+    error.value = resolveErrorMessage(err);
   } finally {
     actionLoading.value = false;
   }
@@ -552,19 +533,15 @@ const addLesson = async (courseId, sectionId) => {
 
   actionLoading.value = true;
   try {
-    await apiRequest(`/instructor/sections/${sectionId}/lessons`, {
-      method: "POST",
-      auth: true,
-      body: {
-        title: draft.title.trim(),
-        slug: draft.slug.trim().toLowerCase(),
-        type: draft.type || "VIDEO"
-      }
+    await instructorApi.createLesson(sectionId, {
+      title: draft.title.trim(),
+      slug: draft.slug.trim().toLowerCase(),
+      type: draft.type || "VIDEO"
     });
     lessonDrafts.value[sectionId] = { title: "", slug: "", type: "VIDEO" };
     await loadStudio(courseId);
   } catch (err) {
-    error.value = err.message;
+    error.value = resolveErrorMessage(err);
   } finally {
     actionLoading.value = false;
   }
@@ -606,22 +583,18 @@ const saveLessonEditor = async () => {
 
   actionLoading.value = true;
   try {
-    await apiRequest(`/instructor/lessons/${lessonEditor.value.lessonId}`, {
-      method: "PATCH",
-      auth: true,
-      body: {
-        title: form.title.trim(),
-        slug: form.slug.trim().toLowerCase(),
-        videoUrl: form.videoUrl?.trim() || null,
-        durationMinutes: Number(form.durationMinutes || 0),
-        isPreview: Boolean(form.isPreview),
-        attachments
-      }
+    await instructorApi.updateLesson(lessonEditor.value.lessonId, {
+      title: form.title.trim(),
+      slug: form.slug.trim().toLowerCase(),
+      videoUrl: form.videoUrl?.trim() || null,
+      durationMinutes: Number(form.durationMinutes || 0),
+      isPreview: Boolean(form.isPreview),
+      attachments
     });
     await loadStudio(lessonEditor.value.courseId);
     closeLessonEditor();
   } catch (err) {
-    error.value = err.message;
+    error.value = resolveErrorMessage(err);
   } finally {
     actionLoading.value = false;
   }

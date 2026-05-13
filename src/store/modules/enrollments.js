@@ -1,5 +1,6 @@
-import { apiRequest } from '@/lib/api'
 import { normalizeEnrollment } from '@/lib/normalizers'
+import { enrollmentApi } from '@/modules/enrollment/api/enrollmentApi'
+import { resolveErrorMessage } from '@/shared/services/apiClient'
 
 const state = {
   enrolledCourses: [],
@@ -60,13 +61,13 @@ const actions = {
       commit('SET_LOADING', true)
       commit('SET_ERROR', null)
 
-      const response = await apiRequest('/student/me/enrollments', { auth: true })
+      const response = await enrollmentApi.listMyEnrollments()
       const courses = response.data.map(normalizeEnrollment)
 
       commit('SET_ENROLLED_COURSES', courses)
       return courses
     } catch (error) {
-      commit('SET_ERROR', error.message)
+      commit('SET_ERROR', resolveErrorMessage(error))
       throw error
     } finally {
       commit('SET_LOADING', false)
@@ -78,23 +79,19 @@ const actions = {
       commit('SET_LOADING', true)
       commit('SET_ERROR', null)
 
-      const response = await apiRequest('/student/me/enrollments', {
-        method: 'POST',
-        auth: true,
-        body: { courseId }
-      })
+      const response = await enrollmentApi.createEnrollment(courseId)
 
       const newCourse = {
         ...courseData,
-        enrolled_at: response.data.enrolledAt || response.data.enrolled_at,
-        progress: response.data.progressPercent || 0,
-        completed_at: response.data.completedAt || null
+        enrolled_at: response?.enrolledAt || response?.enrolled_at,
+        progress: response?.progressPercent || 0,
+        completed_at: response?.completedAt || null
       }
 
       commit('ADD_ENROLLED_COURSE', newCourse)
-      return response.data
+      return response
     } catch (error) {
-      commit('SET_ERROR', error.message)
+      commit('SET_ERROR', resolveErrorMessage(error))
       throw error
     } finally {
       commit('SET_LOADING', false)
@@ -104,10 +101,9 @@ const actions = {
   async checkEnrollment({ commit }, { courseId }) {
     try {
       commit('SET_ERROR', null)
-      const response = await apiRequest('/student/me/enrollments', { auth: true })
-      return response.data.some((enrollment) => enrollment.courseId === courseId || enrollment.course?.id === courseId)
+      return enrollmentApi.checkEnrollment(courseId)
     } catch (error) {
-      commit('SET_ERROR', error.message)
+      commit('SET_ERROR', resolveErrorMessage(error))
       throw error
     }
   },
@@ -115,25 +111,21 @@ const actions = {
   async updateProgress({ commit }, { lessonId, enrollmentId, isCompleted, watchSeconds = 0 }) {
     try {
       if (lessonId) {
-        const response = await apiRequest(`/student/me/lessons/${lessonId}/progress`, {
-          method: 'PATCH',
-          auth: true,
-          body: {
-            enrollmentId,
-            isCompleted,
-            watchSeconds
-          }
+        const response = await enrollmentApi.updateLessonProgress(lessonId, {
+          enrollmentId,
+          isCompleted,
+          watchSeconds
         })
 
         commit('UPDATE_LESSON_PROGRESS', {
           enrollmentId,
           lessonId,
           isCompleted,
-          progress: response.data?.enrollment?.progressPercent ?? 0
+          progress: response?.enrollment?.progressPercent ?? 0
         })
       }
     } catch (error) {
-      commit('SET_ERROR', error.message)
+      commit('SET_ERROR', resolveErrorMessage(error))
       throw error
     }
   }

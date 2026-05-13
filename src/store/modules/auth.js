@@ -1,5 +1,7 @@
-import { apiRequest, clearStoredSession, getStoredSession, setStoredSession } from '@/lib/api'
+import { clearStoredSession, getStoredSession, setStoredSession } from '@/lib/api'
 import { normalizeUser } from '@/lib/normalizers'
+import { authApi } from '@/modules/auth/api/authApi'
+import { resolveErrorMessage } from '@/shared/services/apiClient'
 
 const pushToast = (dispatch, type, message) => {
   if (!message) return
@@ -56,12 +58,12 @@ export default {
       }
 
       try {
-        const response = await apiRequest('/auth/me', { auth: true })
-        commit('SET_USER', normalizeUser(response.data))
+        const user = await authApi.getCurrentUser()
+        commit('SET_USER', normalizeUser(user))
       } catch (error) {
         clearStoredSession()
         commit('SET_USER', null)
-        commit('SET_ERROR', error.message)
+        commit('SET_ERROR', resolveErrorMessage(error))
       } finally {
         commit('SET_AUTH_READY', true)
         commit('SET_INITIALIZED', true)
@@ -73,29 +75,27 @@ export default {
       commit('SET_ERROR', null)
 
       try {
-        const response = await apiRequest('/auth/register', {
-          method: 'POST',
-          body: {
-            name: displayName,
-            email,
-            password,
-            role
-          }
+        const response = await authApi.register({
+          name: displayName,
+          email,
+          password,
+          role
         })
 
         setStoredSession({
-          accessToken: response.data.accessToken,
-          refreshToken: response.data.refreshToken
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken
         })
-        commit('SET_USER', normalizeUser(response.data.user))
+        commit('SET_USER', normalizeUser(response.user))
         commit('SET_NOTIFICATION', { type: 'success', message: 'Account created successfully.' })
         pushToast(dispatch, 'success', 'Account created successfully.')
         return { success: true }
       } catch (error) {
-        commit('SET_ERROR', error.message)
-        commit('SET_NOTIFICATION', { type: 'error', message: error.message })
-        pushToast(dispatch, 'error', error.message)
-        return { success: false, error: error.message }
+        const message = resolveErrorMessage(error)
+        commit('SET_ERROR', message)
+        commit('SET_NOTIFICATION', { type: 'error', message })
+        pushToast(dispatch, 'error', message)
+        return { success: false, error: message }
       } finally {
         commit('SET_LOADING', false)
       }
@@ -106,27 +106,25 @@ export default {
       commit('SET_ERROR', null)
 
       try {
-        const response = await apiRequest('/auth/login', {
-          method: 'POST',
-          body: {
-            email,
-            password
-          }
+        const response = await authApi.login({
+          email,
+          password
         })
 
         setStoredSession({
-          accessToken: response.data.accessToken,
-          refreshToken: response.data.refreshToken
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken
         })
-        commit('SET_USER', normalizeUser(response.data.user))
+        commit('SET_USER', normalizeUser(response.user))
         commit('SET_NOTIFICATION', { type: 'success', message: 'Logged in successfully!' })
         pushToast(dispatch, 'success', 'Logged in successfully!')
         return { success: true }
       } catch (error) {
-        commit('SET_ERROR', error.message)
-        commit('SET_NOTIFICATION', { type: 'error', message: error.message })
-        pushToast(dispatch, 'error', error.message)
-        return { success: false, error: error.message }
+        const message = resolveErrorMessage(error)
+        commit('SET_ERROR', message)
+        commit('SET_NOTIFICATION', { type: 'error', message })
+        pushToast(dispatch, 'error', message)
+        return { success: false, error: message }
       } finally {
         commit('SET_LOADING', false)
       }
@@ -139,10 +137,7 @@ export default {
         const { refreshToken } = getStoredSession()
 
         if (refreshToken) {
-          await apiRequest('/auth/logout', {
-            method: 'POST',
-            body: { refreshToken }
-          })
+          await authApi.logout(refreshToken)
         }
 
         clearStoredSession()
@@ -151,10 +146,11 @@ export default {
         pushToast(dispatch, 'success', 'Logged out successfully!')
         return { success: true }
       } catch (error) {
-        commit('SET_ERROR', error.message)
-        commit('SET_NOTIFICATION', { type: 'error', message: error.message })
-        pushToast(dispatch, 'error', error.message)
-        return { success: false, error: error.message }
+        const message = resolveErrorMessage(error)
+        commit('SET_ERROR', message)
+        commit('SET_NOTIFICATION', { type: 'error', message })
+        pushToast(dispatch, 'error', message)
+        return { success: false, error: message }
       } finally {
         commit('SET_LOADING', false)
       }
@@ -165,24 +161,21 @@ export default {
       commit('SET_ERROR', null)
 
       try {
-        const response = await apiRequest('/auth/me/profile', {
-          method: 'PATCH',
-          auth: true,
-          body: {
-            ...(displayName !== undefined ? { name: displayName } : {}),
-            ...(photoURL !== undefined ? { avatarUrl: photoURL } : {})
-          }
+        const response = await authApi.updateProfile({
+          ...(displayName !== undefined ? { name: displayName } : {}),
+          ...(photoURL !== undefined ? { avatarUrl: photoURL } : {})
         })
 
-        commit('SET_USER', normalizeUser(response.data))
+        commit('SET_USER', normalizeUser(response))
         commit('SET_NOTIFICATION', { type: 'success', message: 'Profile updated successfully!' })
         pushToast(dispatch, 'success', 'Profile updated successfully!')
         return { success: true }
       } catch (error) {
-        commit('SET_ERROR', error.message)
-        commit('SET_NOTIFICATION', { type: 'error', message: error.message })
-        pushToast(dispatch, 'error', error.message)
-        return { success: false, error: error.message }
+        const message = resolveErrorMessage(error)
+        commit('SET_ERROR', message)
+        commit('SET_NOTIFICATION', { type: 'error', message })
+        pushToast(dispatch, 'error', message)
+        return { success: false, error: message }
       } finally {
         commit('SET_LOADING', false)
       }
@@ -193,22 +186,19 @@ export default {
       commit('SET_ERROR', null)
 
       try {
-        const response = await apiRequest('/auth/change-email/request', {
-          method: 'POST',
-          auth: true,
-          body: {
-            newEmail: payload.email,
-            currentPassword: payload.currentPassword
-          }
+        const response = await authApi.requestEmailChange({
+          newEmail: payload.email,
+          currentPassword: payload.currentPassword
         })
-        commit('SET_NOTIFICATION', { type: 'success', message: response.data?.message || 'Verification link generated.' })
-        pushToast(dispatch, 'success', response.data?.message || 'Verification link generated.')
-        return { success: true, data: response.data }
+        commit('SET_NOTIFICATION', { type: 'success', message: response?.message || 'Verification link generated.' })
+        pushToast(dispatch, 'success', response?.message || 'Verification link generated.')
+        return { success: true, data: response }
       } catch (error) {
-        commit('SET_ERROR', error.message)
-        commit('SET_NOTIFICATION', { type: 'error', message: error.message })
-        pushToast(dispatch, 'error', error.message)
-        return { success: false, error: error.message }
+        const message = resolveErrorMessage(error)
+        commit('SET_ERROR', message)
+        commit('SET_NOTIFICATION', { type: 'error', message })
+        pushToast(dispatch, 'error', message)
+        return { success: false, error: message }
       } finally {
         commit('SET_LOADING', false)
       }
@@ -218,21 +208,19 @@ export default {
       commit('SET_LOADING', true)
       commit('SET_ERROR', null)
       try {
-        const response = await apiRequest('/auth/change-email/confirm', {
-          method: 'POST',
-          body: { token }
-        })
-        if (response.data?.user) {
-          commit('SET_USER', normalizeUser(response.data.user))
+        const response = await authApi.confirmEmailChange(token)
+        if (response?.user) {
+          commit('SET_USER', normalizeUser(response.user))
         }
-        commit('SET_NOTIFICATION', { type: 'success', message: response.data?.message || 'Email updated.' })
-        pushToast(dispatch, 'success', response.data?.message || 'Email updated.')
-        return { success: true, data: response.data }
+        commit('SET_NOTIFICATION', { type: 'success', message: response?.message || 'Email updated.' })
+        pushToast(dispatch, 'success', response?.message || 'Email updated.')
+        return { success: true, data: response }
       } catch (error) {
-        commit('SET_ERROR', error.message)
-        commit('SET_NOTIFICATION', { type: 'error', message: error.message })
-        pushToast(dispatch, 'error', error.message)
-        return { success: false, error: error.message }
+        const message = resolveErrorMessage(error)
+        commit('SET_ERROR', message)
+        commit('SET_NOTIFICATION', { type: 'error', message })
+        pushToast(dispatch, 'error', message)
+        return { success: false, error: message }
       } finally {
         commit('SET_LOADING', false)
       }
@@ -243,21 +231,19 @@ export default {
       commit('SET_ERROR', null)
 
       try {
-        const response = await apiRequest('/auth/forgot-password', {
-          method: 'POST',
-          body: { email }
-        })
-        commit('SET_NOTIFICATION', { type: 'success', message: response.data?.message || 'Password reset link generated.' })
-        pushToast(dispatch, 'success', response.data?.message || 'Password reset link generated.')
+        const response = await authApi.forgotPassword(email)
+        commit('SET_NOTIFICATION', { type: 'success', message: response?.message || 'Password reset link generated.' })
+        pushToast(dispatch, 'success', response?.message || 'Password reset link generated.')
         return {
           success: true,
-          data: response.data
+          data: response
         }
       } catch (error) {
-        commit('SET_ERROR', error.message)
-        commit('SET_NOTIFICATION', { type: 'error', message: error.message })
-        pushToast(dispatch, 'error', error.message)
-        return { success: false, error: error.message }
+        const message = resolveErrorMessage(error)
+        commit('SET_ERROR', message)
+        commit('SET_NOTIFICATION', { type: 'error', message })
+        pushToast(dispatch, 'error', message)
+        return { success: false, error: message }
       } finally {
         commit('SET_LOADING', false)
       }
@@ -268,18 +254,16 @@ export default {
       commit('SET_ERROR', null)
 
       try {
-        const response = await apiRequest('/auth/reset-password', {
-          method: 'POST',
-          body: { token, newPassword }
-        })
-        commit('SET_NOTIFICATION', { type: 'success', message: response.data?.message || 'Password reset successful.' })
-        pushToast(dispatch, 'success', response.data?.message || 'Password reset successful.')
+        const response = await authApi.resetPassword({ token, newPassword })
+        commit('SET_NOTIFICATION', { type: 'success', message: response?.message || 'Password reset successful.' })
+        pushToast(dispatch, 'success', response?.message || 'Password reset successful.')
         return { success: true }
       } catch (error) {
-        commit('SET_ERROR', error.message)
-        commit('SET_NOTIFICATION', { type: 'error', message: error.message })
-        pushToast(dispatch, 'error', error.message)
-        return { success: false, error: error.message }
+        const message = resolveErrorMessage(error)
+        commit('SET_ERROR', message)
+        commit('SET_NOTIFICATION', { type: 'error', message })
+        pushToast(dispatch, 'error', message)
+        return { success: false, error: message }
       } finally {
         commit('SET_LOADING', false)
       }

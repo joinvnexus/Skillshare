@@ -25,7 +25,10 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useStore } from 'vuex'
-import { apiRequest } from '@/lib/api'
+import { adminApi } from '@/modules/dashboard-admin/api/adminApi'
+import { instructorApi } from '@/modules/dashboard-instructor/api/instructorApi'
+import { studentApi } from '@/modules/dashboard-student/api/studentApi'
+import { resolveErrorMessage } from '@/shared/services/apiClient'
 import DashboardState from '@/components/dashboard/DashboardState.vue'
 
 const store = useStore()
@@ -73,21 +76,20 @@ const cards = computed(() => {
   ]
 })
 
-const endpointByRole = {
-  ADMIN: '/admin/dashboard/overview',
-  INSTRUCTOR: '/instructor/dashboard/overview',
-  STUDENT: '/student/dashboard/overview'
+const loaderByRole = {
+  ADMIN: () => adminApi.getDashboardOverview(),
+  INSTRUCTOR: () => instructorApi.getDashboardOverview(),
+  STUDENT: () => studentApi.getDashboardOverview()
 }
 
 const fetchOverview = async () => {
   loading.value = true
   error.value = null
   try {
-    const endpoint = endpointByRole[role.value] || endpointByRole.STUDENT
-    const response = await apiRequest(endpoint, { auth: true })
-    data.value = response.data || {}
+    const loader = loaderByRole[role.value] || loaderByRole.STUDENT
+    data.value = await loader()
   } catch (err) {
-    error.value = err.message
+    error.value = resolveErrorMessage(err)
   } finally {
     loading.value = false
   }

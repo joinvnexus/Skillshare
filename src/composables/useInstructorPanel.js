@@ -1,5 +1,6 @@
 import { computed, onMounted, ref } from "vue";
-import { apiRequest } from "@/lib/api";
+import { instructorApi } from "@/modules/dashboard-instructor/api/instructorApi";
+import { resolveErrorMessage } from "@/shared/services/apiClient";
 
 export const useInstructorPanel = () => {
   const loading = ref(true);
@@ -37,33 +38,29 @@ export const useInstructorPanel = () => {
   const selectedCourseId = ref("");
 
   const reloadOverview = async () => {
-    const response = await apiRequest("/instructor/dashboard/overview", { auth: true });
-    overview.value = response.data || overview.value;
+    overview.value = await instructorApi.getDashboardOverview();
   };
 
   const reloadRevenue = async () => {
-    const response = await apiRequest("/instructor/revenue/overview", { auth: true });
-    revenue.value = response.data || revenue.value;
+    revenue.value = await instructorApi.getRevenueOverview();
   };
 
   const reloadPayouts = async () => {
-    const response = await apiRequest("/instructor/revenue/payouts", { auth: true });
+    const response = await instructorApi.listPayouts();
     payouts.value = response.data || [];
   };
 
   const reloadBankInfo = async () => {
-    const response = await apiRequest("/instructor/revenue/bank", { auth: true });
-    bankInfo.value = response.data || bankInfo.value;
+    bankInfo.value = await instructorApi.getBankInfo();
   };
 
   const reloadReviews = async () => {
-    const response = await apiRequest("/instructor/reviews", { auth: true });
+    const response = await instructorApi.listReviews();
     reviews.value = response.data || [];
   };
 
   const reloadProfile = async () => {
-    const response = await apiRequest("/instructor/me/profile", { auth: true });
-    const data = response.data || {};
+    const data = await instructorApi.getProfile();
     profile.value = {
       title: data.title || "",
       bio: data.bio || "",
@@ -78,7 +75,7 @@ export const useInstructorPanel = () => {
   };
 
   const reloadCourses = async () => {
-    const response = await apiRequest("/instructor/courses", { auth: true });
+    const response = await instructorApi.listCourses();
     courses.value = response.data || [];
     courseEdits.value = courses.value.reduce((acc, course) => {
       acc[course.id] = { status: course.status };
@@ -91,10 +88,10 @@ export const useInstructorPanel = () => {
     enrollmentsLoading.value = true;
     selectedCourseId.value = courseId;
     try {
-      const response = await apiRequest(`/instructor/courses/${courseId}/enrollments`, { auth: true });
+      const response = await instructorApi.listCourseEnrollments(courseId);
       enrollments.value = response.data || [];
     } catch (err) {
-      error.value = err.message;
+      error.value = resolveErrorMessage(err);
     } finally {
       enrollmentsLoading.value = false;
     }
@@ -114,7 +111,7 @@ export const useInstructorPanel = () => {
         reloadReviews()
       ]);
     } catch (err) {
-      error.value = err.message;
+      error.value = resolveErrorMessage(err);
     } finally {
       loading.value = false;
     }
@@ -124,85 +121,61 @@ export const useInstructorPanel = () => {
     const status = courseEdits.value[courseId]?.status;
     if (!status) return;
     try {
-      await apiRequest(`/instructor/courses/${courseId}/status`, {
-        method: "PATCH",
-        auth: true,
-        body: { status }
-      });
+      await instructorApi.updateCourseStatus(courseId, { status });
       await reloadCourses();
     } catch (err) {
-      error.value = err.message;
+      error.value = resolveErrorMessage(err);
     }
   };
 
   const updateCourseFields = async (courseId, fields) => {
     try {
-      await apiRequest(`/instructor/courses/${courseId}`, {
-        method: "PATCH",
-        auth: true,
-        body: {
-          title: fields.title,
-          shortDescription: fields.shortDescription,
-          level: fields.level,
-          price: fields.price === "" ? null : Number(fields.price),
-          thumbnailUrl: fields.thumbnailUrl || null
-        }
+      await instructorApi.updateCourse(courseId, {
+        title: fields.title,
+        shortDescription: fields.shortDescription,
+        level: fields.level,
+        price: fields.price === "" ? null : Number(fields.price),
+        thumbnailUrl: fields.thumbnailUrl || null
       });
       await reloadCourses();
     } catch (err) {
-      error.value = err.message;
+      error.value = resolveErrorMessage(err);
     }
   };
 
   const createCourse = async (payload) => {
-    await apiRequest("/instructor/courses", {
-      method: "POST",
-      auth: true,
-      body: payload
-    });
+    await instructorApi.createCourse(payload);
     await reloadCourses();
   };
 
 
   const updateProfile = async (payload) => {
     try {
-      await apiRequest("/instructor/me/profile", {
-        method: "PATCH",
-        auth: true,
-        body: {
-          title: payload.title,
-          bio: payload.bio,
-          photoUrl: payload.photoUrl || null,
-          expertise: payload.expertise
-            ? payload.expertise.split(",").map((item) => item.trim()).filter(Boolean)
-            : [],
-          websiteUrl: payload.websiteUrl || null,
-          linkedinUrl: payload.linkedinUrl || null,
-          twitterUrl: payload.twitterUrl || null,
-          githubUrl: payload.githubUrl || null,
-          youtubeUrl: payload.youtubeUrl || null
-        }
+      await instructorApi.updateProfile({
+        title: payload.title,
+        bio: payload.bio,
+        photoUrl: payload.photoUrl || null,
+        expertise: payload.expertise
+          ? payload.expertise.split(",").map((item) => item.trim()).filter(Boolean)
+          : [],
+        websiteUrl: payload.websiteUrl || null,
+        linkedinUrl: payload.linkedinUrl || null,
+        twitterUrl: payload.twitterUrl || null,
+        githubUrl: payload.githubUrl || null,
+        youtubeUrl: payload.youtubeUrl || null
       });
       await reloadProfile();
     } catch (err) {
-      error.value = err.message;
+      error.value = resolveErrorMessage(err);
     }
   };
 
   const sendAnnouncement = async (payload) => {
-    await apiRequest("/instructor/announcements", {
-      method: "POST",
-      auth: true,
-      body: payload
-    });
+    await instructorApi.sendAnnouncement(payload);
   };
 
   const replyToReview = async (reviewId, message) => {
-    await apiRequest(`/instructor/reviews/${reviewId}/reply`, {
-      method: "POST",
-      auth: true,
-      body: { message }
-    });
+    await instructorApi.replyToReview(reviewId, message);
   };
 
   const recentCourses = computed(() => courses.value.slice(0, 5));

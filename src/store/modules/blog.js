@@ -1,5 +1,6 @@
-import { apiRequest } from '@/lib/api'
 import { normalizeBlogPost } from '@/lib/normalizers'
+import { blogApi } from '@/modules/blog/api/blogApi'
+import { resolveErrorMessage } from '@/shared/services/apiClient'
 
 const state = {
   posts: [],
@@ -26,13 +27,13 @@ const actions = {
   async fetchPosts({ commit }) {
     try {
       commit('SET_LOADING', true)
-      const response = await apiRequest('/blogs')
+      const response = await blogApi.listBlogs()
       const posts = response.data.map(normalizeBlogPost)
 
       commit('SET_POSTS', posts)
       return posts
     } catch (error) {
-      commit('SET_ERROR', error.message)
+      commit('SET_ERROR', resolveErrorMessage(error))
       console.error('Error fetching posts:', error)
       throw error
     } finally {
@@ -43,13 +44,12 @@ const actions = {
   async fetchFeaturedPosts({ commit }) {
     try {
       commit('SET_LOADING', true)
-      const response = await apiRequest('/home')
-      const posts = (response.data.featuredBlogs || []).map(normalizeBlogPost)
+      const posts = (await blogApi.listFeaturedBlogs()).map(normalizeBlogPost)
 
       commit('SET_POSTS', posts)
       return posts
     } catch (error) {
-      commit('SET_ERROR', error.message)
+      commit('SET_ERROR', resolveErrorMessage(error))
       console.error('Error fetching featured posts:', error)
       throw error
     } finally {
@@ -60,10 +60,10 @@ const actions = {
   async fetchPostBySlug({ commit }, slug) {
     try {
       commit('SET_LOADING', true)
-      const response = await apiRequest(`/blogs/${slug}`)
-      return normalizeBlogPost(response.data)
+      const post = await blogApi.getBlogBySlug(slug)
+      return normalizeBlogPost(post)
     } catch (error) {
-      commit('SET_ERROR', error.message)
+      commit('SET_ERROR', resolveErrorMessage(error))
       console.error('Error fetching post by slug:', error)
       throw error
     } finally {
@@ -73,12 +73,7 @@ const actions = {
 
   async createPost({ commit }, post) {
     try {
-      const response = await apiRequest('/admin/blogs', {
-        method: 'POST',
-        auth: true,
-        body: post
-      })
-      const createdPost = normalizeBlogPost(response.data)
+      const createdPost = normalizeBlogPost(await blogApi.createBlog(post))
 
       commit('ADD_POST', createdPost)
       return createdPost
@@ -90,7 +85,7 @@ const actions = {
 
   async incrementViewCount(_, slug) {
     try {
-      await apiRequest(`/blogs/${slug}`)
+      await blogApi.incrementViewCount(slug)
     } catch (error) {
       console.warn('Error incrementing view count:', error)
     }

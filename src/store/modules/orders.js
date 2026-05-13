@@ -1,4 +1,5 @@
-import { apiRequest } from "@/lib/api";
+import { checkoutApi } from "@/modules/checkout/api/checkoutApi";
+import { resolveErrorMessage } from "@/shared/services/apiClient";
 
 const state = {
   items: [],
@@ -47,11 +48,11 @@ const actions = {
     try {
       commit("SET_LOADING", true);
       commit("SET_ERROR", null);
-      const response = await apiRequest("/student/me/orders", { auth: true });
+      const response = await checkoutApi.listOrders();
       commit("SET_ITEMS", response.data || []);
       return response.data || [];
     } catch (error) {
-      commit("SET_ERROR", error.message);
+      commit("SET_ERROR", resolveErrorMessage(error));
       throw error;
     } finally {
       commit("SET_LOADING", false);
@@ -62,12 +63,12 @@ const actions = {
     try {
       commit("SET_LOADING", true);
       commit("SET_ERROR", null);
-      const response = await apiRequest(`/student/me/orders/${orderId}`, { auth: true });
-      commit("SET_SELECTED_ORDER", response.data);
-      commit("UPDATE_ORDER", response.data);
-      return response.data;
+      const order = await checkoutApi.getOrderById(orderId);
+      commit("SET_SELECTED_ORDER", order);
+      commit("UPDATE_ORDER", order);
+      return order;
     } catch (error) {
-      commit("SET_ERROR", error.message);
+      commit("SET_ERROR", resolveErrorMessage(error));
       throw error;
     } finally {
       commit("SET_LOADING", false);
@@ -78,15 +79,11 @@ const actions = {
     try {
       commit("SET_LOADING", true);
       commit("SET_ERROR", null);
-      const response = await apiRequest("/student/me/orders", {
-        method: "POST",
-        auth: true,
-        body: payload
-      });
-      commit("ADD_ORDER", response.data);
-      return response.data;
+      const order = await checkoutApi.createOrder(payload);
+      commit("ADD_ORDER", order);
+      return order;
     } catch (error) {
-      commit("SET_ERROR", error.message);
+      commit("SET_ERROR", resolveErrorMessage(error));
       throw error;
     } finally {
       commit("SET_LOADING", false);
@@ -97,18 +94,14 @@ const actions = {
     try {
       commit("SET_LOADING", true);
       commit("SET_ERROR", null);
-      const response = await apiRequest(`/student/me/orders/${orderId}/pay`, {
-        method: "POST",
-        auth: true,
-        body: {
-          paymentMethod,
-          paymentReference
-        }
+      const order = await checkoutApi.payOrder(orderId, {
+        paymentMethod,
+        paymentReference
       });
-      commit("UPDATE_ORDER", response.data);
-      return response.data;
+      commit("UPDATE_ORDER", order);
+      return order;
     } catch (error) {
-      commit("SET_ERROR", error.message);
+      commit("SET_ERROR", resolveErrorMessage(error));
       throw error;
     } finally {
       commit("SET_LOADING", false);
@@ -119,14 +112,11 @@ const actions = {
     try {
       commit("SET_LOADING", true);
       commit("SET_ERROR", null);
-      const response = await apiRequest(`/student/me/orders/${orderId}/payment-intent`, {
-        method: "POST",
-        auth: true
-      });
-      commit("SET_PAYMENT_INTENT", response.data);
-      return response.data;
+      const intent = await checkoutApi.createPaymentIntent(orderId);
+      commit("SET_PAYMENT_INTENT", intent);
+      return intent;
     } catch (error) {
-      commit("SET_ERROR", error.message);
+      commit("SET_ERROR", resolveErrorMessage(error));
       throw error;
     } finally {
       commit("SET_LOADING", false);
@@ -146,19 +136,15 @@ const actions = {
     try {
       commit("SET_LOADING", true);
       commit("SET_ERROR", null);
-      const response = await apiRequest(`/student/me/orders/${orderId}/payment-verify`, {
-        method: "POST",
-        auth: true,
-        body: {
-          paymentReference,
-          outcome,
-          paymentMethod
-        }
+      const order = await checkoutApi.verifyPayment(orderId, {
+        paymentReference,
+        outcome,
+        paymentMethod
       });
-      commit("UPDATE_ORDER", response.data);
-      return response.data;
+      commit("UPDATE_ORDER", order);
+      return order;
     } catch (error) {
-      commit("SET_ERROR", error.message);
+      commit("SET_ERROR", resolveErrorMessage(error));
       throw error;
     } finally {
       commit("SET_LOADING", false);
