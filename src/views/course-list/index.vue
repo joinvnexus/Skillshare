@@ -37,8 +37,8 @@
           </div>
 
           <LoadingSpinner v-if="loading" />
-          <ErrorState v-else-if="error" :error="error" @retry="fetchCourses" />
-          <NoResults v-else-if="courseCount === 0" @reset="resetFilters" />
+          <ErrorState v-else-if="error" :error="error" @retry="initializeCatalogPage($route.query)" />
+          <NoResults v-else-if="courseCount === 0" @reset="resetCatalogFilters" />
           <CourseGrid
             v-else
             :courses="paginatedCourses"
@@ -49,7 +49,7 @@
           <Pagination
             :current-page="currentPage"
             :total-pages="totalPages"
-            @page-changed="changePage"
+            @page-changed="handlePageChange"
             :loading="loading"
             :error="error"
           />
@@ -85,11 +85,9 @@
     },
     // Updated computed and methods
     computed: {
-      ...mapState('ui', ['loading', 'error', 'currentPage']),
+      ...mapState('catalog', ['loading', 'error', 'currentPage', 'sortBy']),
       ...mapState('auth', ['user']),
-      ...mapState('filters', ['sortBy']),
-      ...mapGetters('ui', ['paginatedCourses', 'totalPages', 'courseCount']),
-      ...mapGetters('filters', ['hasFilters']),
+      ...mapGetters('catalog', ['paginatedCourses', 'totalPages', 'courseCount', 'hasFilters']),
 
     },
     data() {
@@ -99,13 +97,15 @@
     },
 
     methods: {
-      ...mapActions('courses', ['fetchCourses']),
-      ...mapActions('filters', ['updateSortBy', 'resetFilters']),
-      ...mapActions('ui', ['changePage']),
+      ...mapActions('catalog', ['initializeCatalogPage', 'setSortBy', 'resetFilters', 'changePage']),
       ...mapActions('cart', ['addToCart']),
       ...mapActions('wishlist', ['addToWishlist', 'removeFromWishlist', 'fetchWishlist']),
+      syncCatalogQuery() {
+        this.$router.replace({ name: 'courses', query: this.$store.getters['catalog/routeQuery'] })
+      },
       updateSort(e) {
-        this.updateSortBy(e.target.value)
+        this.setSortBy(e.target.value)
+        this.syncCatalogQuery()
       },
       ensureAuthOrRedirect() {
         if (this.user) return true
@@ -124,15 +124,22 @@
           await this.removeFromWishlist(courseId)
           return
         }
-        if (course) {
+      if (course) {
           await this.addToWishlist(course)
         }
+      },
+      resetCatalogFilters() {
+        this.resetFilters()
+        this.syncCatalogQuery()
+      },
+      handlePageChange(page) {
+        this.changePage(page)
+        this.syncCatalogQuery()
       }
     },
-    created() {
+    async created() {
       this.localSortBy = this.sortBy
-      this.updateSortBy(this.sortBy)
-      this.fetchCourses()
+      await this.initializeCatalogPage(this.$route.query)
       if (this.user) {
         this.fetchWishlist().catch(() => {})
       }
@@ -153,13 +160,18 @@
       sortBy(newVal) {
         this.localSortBy = newVal
       },
-
-      '$store.state.ui.loading': function (newVal) {
+      '$route.query': {
+        deep: true,
+        handler(query) {
+          this.initializeCatalogPage(query)
+        }
+      },
+      '$store.state.catalog.loading': function (newVal) {
         if (newVal) {
           AOS.refresh()
         }
       },
-      '$store.state.ui.error': function (newVal) {
+      '$store.state.catalog.error': function (newVal) {
         if (newVal) {
           AOS.refresh()
         }

@@ -112,7 +112,7 @@
         
         <!-- Reset Filters -->
         <button 
-          @click="resetFilters"
+          @click="resetAllFilters"
           class="w-full text-sm text-[var(--brand-strong)] hover:underline"
         >
           Reset all filters
@@ -219,14 +219,14 @@
         <div v-if="totalPages > 1" class="flex items-center justify-between mt-8">
           <div class="flex-1 flex justify-between sm:hidden">
             <button 
-              @click="changePage(currentPage - 1)"
+              @click="handlePageChange(currentPage - 1)"
               :disabled="currentPage === 1"
               class="relative inline-flex items-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--bg-alt)]"
             >
               Previous
             </button>
             <button 
-              @click="changePage(currentPage + 1)"
+              @click="handlePageChange(currentPage + 1)"
               :disabled="currentPage === totalPages"
               class="relative ml-3 inline-flex items-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--bg-alt)]"
             >
@@ -246,7 +246,7 @@
             <div>
               <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                 <button 
-                   @click="changePage(currentPage - 1)"
+                   @click="handlePageChange(currentPage - 1)"
                    :disabled="currentPage === 1"
                   class="relative inline-flex items-center rounded-l-md border border-[var(--line)] bg-[var(--surface)] px-2 py-2 text-sm font-medium text-[var(--muted)] hover:bg-[var(--bg-alt)]"
                 >
@@ -259,14 +259,14 @@
                 <button 
                   v-for="page in visiblePages"
                   :key="page"
-                   @click="changePage(page)"
+                   @click="handlePageChange(page)"
                   :class="[page === currentPage ? 'z-10 bg-[var(--bg-alt)] border-[var(--brand)] text-[var(--brand-strong)]' : 'bg-[var(--surface)] border-[var(--line)] text-[var(--muted)] hover:bg-[var(--bg-alt)]', 'relative inline-flex items-center border px-4 py-2 text-sm font-medium']"
                 >
                   {{ page }}
                 </button>
                 
                 <button 
-                  @click="changePage(currentPage + 1)"
+                  @click="handlePageChange(currentPage + 1)"
                   :disabled="currentPage === totalPages"
                   class="relative inline-flex items-center rounded-r-md border border-[var(--line)] bg-[var(--surface)] px-2 py-2 text-sm font-medium text-[var(--muted)] hover:bg-[var(--bg-alt)]"
                 >
@@ -297,25 +297,21 @@ export default {
   },
   
   computed: {
-    ...mapState('filters', [
+    ...mapState('catalog', [
       'searchQuery',
       'selectedCategories', 
       'selectedLevels',
       'priceRange',
-      'sortBy'
-    ]),
-    ...mapState('ui', [
-      'loading',
+      'sortBy',
       'currentPage',
-      'itemsPerPage'
+      'itemsPerPage',
+      'loading'
     ]),
-    ...mapGetters('filters', [
+    ...mapGetters('catalog', [
       'filteredCourses',
       'allCategories',
       'allLevels',
-      'hasFilters'
-    ]),
-    ...mapGetters('ui', [
+      'hasFilters',
       'totalPages',
       'paginatedCourses'
     ]),
@@ -340,64 +336,70 @@ export default {
   },
   
   methods: {
-    ...mapActions('filters', [
-      'filterCourses',
-      'updateSearchQuery',
-      'updateSelectedCategories',
-      'updateSelectedLevels', 
-      'updatePriceRange',
-      'updateSortBy',
+    ...mapActions('catalog', [
+      'initializeCatalogPage',
+      'setSearchQuery',
+      'setSelectedCategories',
+      'setSelectedLevels', 
+      'setPriceRange',
+      'setSortBy',
       'resetFilters'
     ]),
-    ...mapActions('ui', [
-      'changePage'
-    ]),
+    ...mapActions('catalog', ['changePage']),
+    syncQuery() {
+      this.$router.replace({ name: 'SearchResults', query: this.$store.getters['catalog/routeQuery'] })
+    },
     
     onSortChange(e) {
-      this.updateSortBy(e.target.value)
-      this.changePage(1)
+      this.setSortBy(e.target.value)
+      this.syncQuery()
     },
     
     clearSearch() {
-      this.updateSearchQuery('')
-      this.$router.push({ name: 'SearchResults', query: { q: '' } })
+      this.setSearchQuery('')
+      this.syncQuery()
     },
     
     toggleCategory(category) {
       const updatedCategories = this.selectedCategories.includes(category)
         ? this.selectedCategories.filter(c => c !== category)
         : [...this.selectedCategories, category]
-      this.updateSelectedCategories(updatedCategories)
-      this.changePage(1)
+      this.setSelectedCategories(updatedCategories)
+      this.syncQuery()
     },
     
     toggleLevel(level) {
       const updatedLevels = this.selectedLevels.includes(level)
         ? this.selectedLevels.filter(l => l !== level)
         : [...this.selectedLevels, level]
-      this.updateSelectedLevels(updatedLevels)
-      this.changePage(1)
+      this.setSelectedLevels(updatedLevels)
+      this.syncQuery()
     },
     
     handlePriceRangeChange(value) {
-      this.updatePriceRange(value)
-      this.changePage(1)
+      this.setPriceRange(value)
+      this.syncQuery()
+    },
+    handlePageChange(page) {
+      this.changePage(page)
+      this.syncQuery()
+    },
+    resetAllFilters() {
+      this.resetFilters()
+      this.syncQuery()
     }
   },
   
   created() {
-    if (this.$route.query.q) {
-      this.updateSearchQuery(this.$route.query.q)
-    }
-    this.filterCourses()
+    this.initializeCatalogPage(this.$route.query)
   },
   
   watch: {
-    searchQuery() {
-      this.changePage(1)
-    },
-    sortBy() {
-      this.changePage(1)
+    '$route.query': {
+      deep: true,
+      handler(query) {
+        this.initializeCatalogPage(query)
+      }
     }
   }
 }

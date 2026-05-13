@@ -123,10 +123,10 @@ import DashboardState from "@/components/dashboard/DashboardState.vue";
 const route = useRoute();
 const store = useStore();
 
-const loading = computed(() => store.state.orders.loading);
-const error = computed(() => store.state.orders.error);
-const order = computed(() => store.getters["orders/selectedOrder"]);
-const paymentIntent = computed(() => store.getters["orders/paymentIntentByOrderId"](route.params.orderId));
+const loading = computed(() => store.state.checkout.loading);
+const error = computed(() => store.state.checkout.error);
+const order = computed(() => store.getters["checkout/selectedOrder"]);
+const paymentIntent = computed(() => store.getters["checkout/paymentIntentByOrderId"](route.params.orderId));
 const paymentLoading = ref(false);
 
 const formatDate = (value) => {
@@ -177,16 +177,16 @@ onMounted(() => {
   reloadOrder();
 });
 
-const reloadOrder = () => store.dispatch("orders/fetchOrderById", route.params.orderId);
+const reloadOrder = () => store.dispatch("checkout/fetchOrderById", route.params.orderId);
 
 const startPayment = async () => {
   paymentLoading.value = true;
   try {
-    await store.dispatch("orders/ensurePaymentIntent", route.params.orderId);
+    await store.dispatch("checkout/ensurePaymentIntent", route.params.orderId);
     store.dispatch("ui/notify", { type: "success", message: "Payment initialized." });
     await reloadOrder();
   } catch (_error) {
-    store.dispatch("ui/notify", { type: "error", message: store.state.orders.error || "Payment initialization failed." });
+    store.dispatch("ui/notify", { type: "error", message: store.state.checkout.error || "Payment initialization failed." });
   } finally {
     paymentLoading.value = false;
   }
@@ -195,20 +195,20 @@ const startPayment = async () => {
 const verifyPayment = async (outcome) => {
   paymentLoading.value = true;
   try {
-    const resolvedIntent = await store.dispatch("orders/ensurePaymentIntent", route.params.orderId);
-    await store.dispatch("orders/verifyPayment", {
+    const resolvedIntent = await store.dispatch("checkout/ensurePaymentIntent", route.params.orderId);
+    await store.dispatch("checkout/verifyPayment", {
       orderId: route.params.orderId,
       paymentReference: resolvedIntent?.paymentReference,
       outcome,
       paymentMethod: "CARD"
     });
-    await Promise.all([reloadOrder(), store.dispatch("enrollments/fetchEnrolledCourses")]);
+    await Promise.all([reloadOrder(), store.dispatch("learning/fetchEnrolledCourses")]);
     store.dispatch("ui/notify", {
       type: outcome === "SUCCESS" ? "success" : "warning",
       message: outcome === "SUCCESS" ? "Payment completed and courses unlocked." : "Payment marked as failed."
     });
   } catch (_error) {
-    store.dispatch("ui/notify", { type: "error", message: store.state.orders.error || "Payment verification failed." });
+    store.dispatch("ui/notify", { type: "error", message: store.state.checkout.error || "Payment verification failed." });
   } finally {
     paymentLoading.value = false;
   }

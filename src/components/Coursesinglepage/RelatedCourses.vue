@@ -31,8 +31,7 @@ export default {
     }
   },
   computed: {
-    ...mapState("courses", ["relatedCourses"]),
-    ...mapState("ui", ["loading"])
+    ...mapState("courseDetail", ["relatedCourses", "loading"])
   }
 };
 </script>

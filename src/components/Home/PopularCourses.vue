@@ -122,14 +122,14 @@ export default {
     }
   },
   computed: {
-    ...mapState('courses', ['loading', 'error']),
-    ...mapGetters('courses', ['getPopularCourses']),
+    ...mapState('catalog', ['loading', 'error']),
+    ...mapGetters('catalog', ['getPopularCourses']),
     popularCourses() {
       return this.getPopularCourses.slice(0, 4)
     }
   },
   methods: {
-    ...mapActions('courses', ['fetchCourses']),
+    ...mapActions('catalog', ['fetchCourses']),
     fetchPopularCourses() {
       this.fetchCourses()
     }

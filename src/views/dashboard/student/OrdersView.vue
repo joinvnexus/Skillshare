@@ -86,10 +86,10 @@ import { useStore } from "vuex";
 import DashboardState from "@/components/dashboard/DashboardState.vue";
 
 const store = useStore();
-const orders = computed(() => store.getters["orders/orders"]);
-const loading = computed(() => store.state.orders.loading);
-const error = computed(() => store.state.orders.error);
-const intentByOrderId = computed(() => store.state.orders.paymentIntents || {});
+const orders = computed(() => store.getters["checkout/orders"]);
+const loading = computed(() => store.state.checkout.loading);
+const error = computed(() => store.state.checkout.error);
+const intentByOrderId = computed(() => store.state.checkout.paymentIntents || {});
 const paymentLoadingId = ref(null);
 
 const formatDate = (value) => {
@@ -102,15 +102,15 @@ onMounted(() => {
   reloadOrders();
 });
 
-const reloadOrders = () => store.dispatch("orders/fetchOrders");
+const reloadOrders = () => store.dispatch("checkout/fetchOrders");
 
 const startPayment = async (orderId) => {
   paymentLoadingId.value = orderId;
   try {
-    await store.dispatch("orders/ensurePaymentIntent", orderId);
+    await store.dispatch("checkout/ensurePaymentIntent", orderId);
     store.dispatch("ui/notify", { type: "success", message: "Payment initialized." });
   } catch (_error) {
-    store.dispatch("ui/notify", { type: "error", message: store.state.orders.error || "Payment initialization failed." });
+    store.dispatch("ui/notify", { type: "error", message: store.state.checkout.error || "Payment initialization failed." });
   } finally {
     paymentLoadingId.value = null;
   }
@@ -119,20 +119,20 @@ const startPayment = async (orderId) => {
 const verifyPayment = async (orderId, outcome) => {
   paymentLoadingId.value = orderId;
   try {
-    const resolvedIntent = await store.dispatch("orders/ensurePaymentIntent", orderId);
-    await store.dispatch("orders/verifyPayment", {
+    const resolvedIntent = await store.dispatch("checkout/ensurePaymentIntent", orderId);
+    await store.dispatch("checkout/verifyPayment", {
       orderId,
       paymentReference: resolvedIntent?.paymentReference,
       outcome,
       paymentMethod: "CARD"
     });
-    await Promise.all([store.dispatch("orders/fetchOrders"), store.dispatch("enrollments/fetchEnrolledCourses")]);
+    await Promise.all([store.dispatch("checkout/fetchOrders"), store.dispatch("learning/fetchEnrolledCourses")]);
     store.dispatch("ui/notify", {
       type: outcome === "SUCCESS" ? "success" : "warning",
       message: outcome === "SUCCESS" ? "Payment marked as paid." : "Payment marked as failed."
     });
   } catch (_error) {
-    store.dispatch("ui/notify", { type: "error", message: store.state.orders.error || "Payment verification failed." });
+    store.dispatch("ui/notify", { type: "error", message: store.state.checkout.error || "Payment verification failed." });
   } finally {
     paymentLoadingId.value = null;
   }

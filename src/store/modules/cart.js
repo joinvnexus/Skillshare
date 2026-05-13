@@ -61,7 +61,7 @@ const actions = {
     if (!state.items.length) return null;
     const courseIds = state.items.map((item) => item.id);
     const order = await dispatch(
-      "orders/createOrder",
+      "checkout/createOrder",
       {
         courseIds,
         paymentMethod: payload.paymentMethod || "CARD",

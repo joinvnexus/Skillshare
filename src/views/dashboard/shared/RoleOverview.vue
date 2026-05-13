@@ -23,19 +23,15 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
-import { adminApi } from '@/modules/dashboard-admin/api/adminApi'
-import { instructorApi } from '@/modules/dashboard-instructor/api/instructorApi'
-import { studentApi } from '@/modules/dashboard-student/api/studentApi'
-import { resolveErrorMessage } from '@/shared/services/apiClient'
 import DashboardState from '@/components/dashboard/DashboardState.vue'
 
 const store = useStore()
-const loading = ref(true)
-const error = ref(null)
-const data = ref({})
 const role = computed(() => store.getters['auth/userRole'])
+const loading = computed(() => store.state.dashboard.loading)
+const error = computed(() => store.state.dashboard.error)
+const data = computed(() => store.getters['dashboard/overviewForRole'](role.value))
 
 const heading = computed(() => {
   if (role.value === 'ADMIN') return 'Admin Overview'
@@ -76,23 +72,8 @@ const cards = computed(() => {
   ]
 })
 
-const loaderByRole = {
-  ADMIN: () => adminApi.getDashboardOverview(),
-  INSTRUCTOR: () => instructorApi.getDashboardOverview(),
-  STUDENT: () => studentApi.getDashboardOverview()
-}
-
 const fetchOverview = async () => {
-  loading.value = true
-  error.value = null
-  try {
-    const loader = loaderByRole[role.value] || loaderByRole.STUDENT
-    data.value = await loader()
-  } catch (err) {
-    error.value = resolveErrorMessage(err)
-  } finally {
-    loading.value = false
-  }
+  await store.dispatch('dashboard/fetchOverview', role.value)
 }
 
 onMounted(fetchOverview)

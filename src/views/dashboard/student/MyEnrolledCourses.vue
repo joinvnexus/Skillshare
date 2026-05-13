@@ -88,10 +88,10 @@ export default {
     }
   },
   computed: {
-    ...mapState('enrollments', ['enrolledCourses', 'loading', 'error'])
+    ...mapState('learning', ['enrolledCourses', 'loading', 'error'])
   },
   methods: {
-    ...mapActions('enrollments', ['fetchEnrolledCourses', 'updateProgress']),
+    ...mapActions('learning', ['fetchEnrolledCourses', 'updateProgress']),
     toggleExpand(enrollmentId) {
       this.expandedEnrollments = {
         ...this.expandedEnrollments,

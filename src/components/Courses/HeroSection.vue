@@ -36,13 +36,12 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 export default {
   name: "CoursesHeroSection",
   data() {
     return {
-      activeCategory: "All",
       stats: [
         { value: "5K+", label: "Courses" },
         { value: "10K+", label: "Students" },
@@ -51,17 +50,20 @@ export default {
     };
   },
   computed: {
+    ...mapState("catalog", ["selectedCategories"]),
     allCategories() {
-      return ["All", ...this.$store.getters["filters/allCategories"]].slice(0, 9);
+      return ["All", ...this.$store.getters["catalog/allCategories"]].slice(0, 9);
+    },
+    activeCategory() {
+      return this.selectedCategories[0] || "All";
     }
   },
   methods: {
-    ...mapActions("filters", ["updateSelectedCategories", "filterCourses"]),
+    ...mapActions("catalog", ["setSelectedCategories"]),
     filterCourses(category) {
-      this.activeCategory = category;
       const categories = category === "All" ? [] : [category];
-      this.updateSelectedCategories(categories);
-      this.$store.dispatch("filters/filterCourses");
+      this.setSelectedCategories(categories);
+      this.$router.replace({ name: "courses", query: this.$store.getters["catalog/routeQuery"] });
 
       const courseSection = document.getElementById("course-listing");
       if (courseSection) {

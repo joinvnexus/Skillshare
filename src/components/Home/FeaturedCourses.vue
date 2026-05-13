@@ -111,14 +111,16 @@ export default {
     }
   },
   computed: {
-    ...mapState('ui', ['loading', 'error']),
-    ...mapGetters('courses', ['getFeaturedCourses'])
+    ...mapState('catalog', ['loading', 'error']),
+    ...mapGetters('catalog', ['getFeaturedCourses'])
   },
   created() {
-    this.fetchCourses()
+    if (this.getFeaturedCourses.length === 0) {
+      this.fetchCourses()
+    }
   },
   methods: {
-    ...mapActions('courses', ['fetchCourses']),
+    ...mapActions('catalog', ['fetchCourses']),
     formatPrice(price) {
       return Number(price) === 0 ? 'Free' : `$${price ?? 0}`
     }

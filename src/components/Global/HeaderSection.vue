@@ -253,8 +253,8 @@ const isActive = (path) => {
 
 const performSearch = () => {
   if (!searchQuery.value.trim()) return
-  store.dispatch('filters/updateSearchQuery', searchQuery.value)
-  router.push({ name: 'SearchResults', query: { q: searchQuery.value } })
+  store.dispatch('catalog/setSearchQuery', searchQuery.value)
+  router.push({ name: 'SearchResults', query: store.getters['catalog/routeQuery'] })
   searchQuery.value = ''
   closeMobileMenu()
 }

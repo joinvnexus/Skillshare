@@ -43,7 +43,7 @@
           </div>
           <button
             v-if="hasFilters"
-            @click="resetFilters"
+            @click="resetAllFilters"
             class="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[var(--line)] bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900"
             type="button"
           >
@@ -218,7 +218,7 @@
         <div class="mb-6" v-if="showSortOptions">
           <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Sort By</label>
           <select
-            v-model="sortBy"
+            v-model="localSortBy"
             @change="handleSortChange"
             class="w-full rounded-xl border border-[var(--line)] bg-white px-3 py-2.5 text-sm text-slate-800 outline-none ring-[var(--accent)]/40 focus:ring"
           >
@@ -267,8 +267,8 @@ export default {
     return {
       mobileFiltersOpen: false,
       localPriceRange: [0, 1000],
+      localSortBy: 'newest',
       selectedRating: 0,
-      sortBy: 'newest',
       maxPrice: 1000,
       priceOptions: [
         { label: 'Free', min: 0, max: 0 },
@@ -279,9 +279,8 @@ export default {
     }
   },
   computed: {
-    ...mapState('filters', ['searchQuery', 'selectedCategories', 'selectedLevels', 'priceRange']),
-    ...mapState('courses', ['allCourses']),
-    ...mapGetters('filters', ['allCategories', 'allLevels', 'hasFilters']),
+    ...mapState('catalog', ['searchQuery', 'selectedCategories', 'selectedLevels', 'priceRange', 'sortBy', 'allCourses']),
+    ...mapGetters('catalog', ['allCategories', 'allLevels', 'hasFilters']),
     activeFilterCount() {
       let count = 0
       if (this.searchQuery) count += 1
@@ -298,49 +297,70 @@ export default {
       handler(newVal) {
         this.localPriceRange = [...newVal]
       }
+    },
+    sortBy: {
+      immediate: true,
+      handler(newVal) {
+        this.localSortBy = newVal
+      }
     }
   },
   methods: {
-    ...mapActions('filters', [
-      'updateSearchQuery',
-      'updateSelectedCategories',
-      'updateSelectedLevels',
-      'updatePriceRange',
-      'updateSortBy',
+    ...mapActions('catalog', [
+      'setSearchQuery',
+      'setSelectedCategories',
+      'setSelectedLevels',
+      'setPriceRange',
+      'setSortBy',
       'resetFilters'
     ]),
+    syncCatalogQuery() {
+      this.$router.replace({ name: 'courses', query: this.$store.getters['catalog/routeQuery'] })
+    },
+    resetAllFilters() {
+      this.resetFilters()
+      this.syncCatalogQuery()
+    },
     handleSearchInput(e) {
-      this.updateSearchQuery(e.target.value)
+      this.setSearchQuery(e.target.value)
+      this.syncCatalogQuery()
     },
     clearSearch() {
-      this.updateSearchQuery('')
+      this.setSearchQuery('')
+      this.syncCatalogQuery()
     },
     toggleCategory(category) {
       const newCategories = this.selectedCategories.includes(category)
         ? this.selectedCategories.filter((c) => c !== category)
         : [...this.selectedCategories, category]
-      this.updateSelectedCategories(newCategories)
+      this.setSelectedCategories(newCategories)
+      this.syncCatalogQuery()
     },
     clearCategories() {
-      this.updateSelectedCategories([])
+      this.setSelectedCategories([])
+      this.syncCatalogQuery()
     },
     toggleLevel(level) {
       const newLevels = this.selectedLevels.includes(level)
         ? this.selectedLevels.filter((l) => l !== level)
         : [...this.selectedLevels, level]
-      this.updateSelectedLevels(newLevels)
+      this.setSelectedLevels(newLevels)
+      this.syncCatalogQuery()
     },
     clearLevels() {
-      this.updateSelectedLevels([])
+      this.setSelectedLevels([])
+      this.syncCatalogQuery()
     },
     handlePriceRangeInput() {
       this.$emit('price-range-input', this.localPriceRange)
     },
     handlePriceRangeChange() {
-      this.updatePriceRange([0, this.localPriceRange[1]])
+      this.setPriceRange([0, this.localPriceRange[1]])
+      this.syncCatalogQuery()
     },
     resetPriceRange() {
-      this.updatePriceRange([0, this.maxPrice])
+      this.setPriceRange([0, this.maxPrice])
+      this.syncCatalogQuery()
     },
     getCategoryCount(category) {
       if (!Array.isArray(this.allCourses) || !this.allCourses.length) return 0
@@ -348,7 +368,8 @@ export default {
     },
     setPriceOption(option) {
       this.localPriceRange = [option.min, option.max]
-      this.updatePriceRange([option.min, option.max])
+      this.setPriceRange([option.min, option.max])
+      this.syncCatalogQuery()
     },
     isPriceOptionSelected(option) {
       return this.priceRange[0] === option.min && this.priceRange[1] === option.max
@@ -357,7 +378,8 @@ export default {
       this.$emit('rating-change', this.selectedRating)
     },
     handleSortChange() {
-      this.updateSortBy(this.sortBy)
+      this.setSortBy(this.localSortBy)
+      this.syncCatalogQuery()
     }
   }
 }

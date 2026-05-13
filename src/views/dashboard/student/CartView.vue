@@ -64,7 +64,7 @@ const checkout = async () => {
   message.value = null;
   try {
     const order = await store.dispatch("cart/checkoutCart", { markPaid: false, paymentMethod: "CARD" });
-    await store.dispatch("orders/fetchOrders");
+    await store.dispatch("checkout/fetchOrders");
     message.value = "Order created. Review payment details on the order page.";
     store.dispatch("ui/notify", { type: "success", message: "Order created. Continue to payment." });
     if (order?.id) {

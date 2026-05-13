@@ -134,12 +134,12 @@ export default {
     }
   },
   computed: {
-    ...mapState('ui', ['loading', 'error']),
-    ...mapState('courses', [
+    ...mapState('courseDetail', ['loading', 'error']),
+    ...mapState('courseDetail', [
       'currentCourse',
-      'relatedCourses',
-      'allCourses',
+      'relatedCourses'
     ]),
+    ...mapState('catalog', ['allCourses']),
     ...mapState('auth', ['user']),
 
     course() {
@@ -183,8 +183,9 @@ export default {
     }
   },
   methods: {
-    ...mapActions('courses', ['fetchCourseById']),
-    ...mapActions('enrollments', ['enrollInCourse', 'checkEnrollment']),
+    ...mapActions('courseDetail', ['fetchCourseById']),
+    ...mapActions('catalog', ['fetchCourses']),
+    ...mapActions('learning', ['enrollInCourse', 'checkEnrollment']),
     async syncEnrollmentState() {
       if (!this.$store.getters['auth/isAuthenticated'] || !this.course?.id) {
         this.isEnrolledInCourse = false
@@ -203,6 +204,9 @@ export default {
       if (!identifier) return
       this.activeTab = 'overview'
       try {
+        if (!this.allCourses.length) {
+          await this.fetchCourses()
+        }
         await this.fetchCourseById(identifier)
         await this.syncEnrollmentState()
       } catch (_error) {

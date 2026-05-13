@@ -51,15 +51,15 @@
 
 ## Phase 3: Store Refactor
 
-- [ ] Keep `auth` as the main auth module
-- [ ] Split course listing state into `catalog`
-- [ ] Split single course page state into `courseDetail`
-- [ ] Create `checkout` state module
-- [ ] Create `learning` state module for active enrollments and progress
+- [x] Keep `auth` as the main auth module
+- [x] Split course listing state into `catalog`
+- [x] Split single course page state into `courseDetail`
+- [x] Create `checkout` state module
+- [x] Create `learning` state module for active enrollments and progress
 - [ ] Create `notifications` state module
-- [ ] Create shared dashboard state module
-- [ ] Remove unrelated shared loading/error coupling between modules
-- [ ] Move route/query-driven filter state into one catalog source of truth
+- [x] Create shared dashboard state module
+- [x] Remove unrelated shared loading/error coupling between modules
+- [x] Move route/query-driven filter state into one catalog source of truth
 
 ## Phase 4: Public Site Refactor
 
