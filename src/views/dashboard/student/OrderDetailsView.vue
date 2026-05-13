@@ -36,6 +36,41 @@
         </div>
       </article>
 
+      <article v-if="order.status !== 'PAID'" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 class="text-lg font-semibold text-slate-900">Complete Payment</h2>
+            <p class="mt-1 text-sm text-slate-500">Prepare checkout, then confirm the payment result to unlock the purchased courses.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-if="!paymentIntent"
+              class="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+              :disabled="paymentLoading"
+              @click="startPayment"
+            >
+              {{ paymentLoading ? "Preparing..." : "Prepare Checkout" }}
+            </button>
+            <template v-else>
+              <button
+                class="rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                :disabled="paymentLoading"
+                @click="verifyPayment('SUCCESS')"
+              >
+                {{ paymentLoading ? "Confirming..." : "Complete Payment" }}
+              </button>
+              <button
+                class="rounded-md border border-rose-300 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50"
+                :disabled="paymentLoading"
+                @click="verifyPayment('FAILED')"
+              >
+                {{ paymentLoading ? "Updating..." : "Report Failure" }}
+              </button>
+            </template>
+          </div>
+        </div>
+      </article>
+
       <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 class="text-lg font-semibold text-slate-900">Items</h2>
         <ul class="mt-4 space-y-3">
@@ -63,12 +98,24 @@
           </li>
         </ul>
       </article>
+
+      <article v-if="order.status === 'PAID'" class="rounded-xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 class="text-lg font-semibold text-emerald-900">Courses unlocked</h2>
+            <p class="mt-1 text-sm text-emerald-800">This order is fully paid. Open your course library to continue learning.</p>
+          </div>
+          <router-link to="/dashboard/my-courses" class="rounded-md bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800">
+            Open My Courses
+          </router-link>
+        </div>
+      </article>
     </template>
   </section>
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 import DashboardState from "@/components/dashboard/DashboardState.vue";
@@ -79,6 +126,8 @@ const store = useStore();
 const loading = computed(() => store.state.orders.loading);
 const error = computed(() => store.state.orders.error);
 const order = computed(() => store.getters["orders/selectedOrder"]);
+const paymentIntent = computed(() => store.getters["orders/paymentIntentByOrderId"](route.params.orderId));
+const paymentLoading = ref(false);
 
 const formatDate = (value) => {
   if (!value) return "N/A";
@@ -129,4 +178,39 @@ onMounted(() => {
 });
 
 const reloadOrder = () => store.dispatch("orders/fetchOrderById", route.params.orderId);
+
+const startPayment = async () => {
+  paymentLoading.value = true;
+  try {
+    await store.dispatch("orders/ensurePaymentIntent", route.params.orderId);
+    store.dispatch("ui/notify", { type: "success", message: "Payment initialized." });
+    await reloadOrder();
+  } catch (_error) {
+    store.dispatch("ui/notify", { type: "error", message: store.state.orders.error || "Payment initialization failed." });
+  } finally {
+    paymentLoading.value = false;
+  }
+};
+
+const verifyPayment = async (outcome) => {
+  paymentLoading.value = true;
+  try {
+    const resolvedIntent = await store.dispatch("orders/ensurePaymentIntent", route.params.orderId);
+    await store.dispatch("orders/verifyPayment", {
+      orderId: route.params.orderId,
+      paymentReference: resolvedIntent?.paymentReference,
+      outcome,
+      paymentMethod: "CARD"
+    });
+    await Promise.all([reloadOrder(), store.dispatch("enrollments/fetchEnrolledCourses")]);
+    store.dispatch("ui/notify", {
+      type: outcome === "SUCCESS" ? "success" : "warning",
+      message: outcome === "SUCCESS" ? "Payment completed and courses unlocked." : "Payment marked as failed."
+    });
+  } catch (_error) {
+    store.dispatch("ui/notify", { type: "error", message: store.state.orders.error || "Payment verification failed." });
+  } finally {
+    paymentLoading.value = false;
+  }
+};
 </script>

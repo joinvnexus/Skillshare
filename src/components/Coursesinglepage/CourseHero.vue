@@ -49,7 +49,7 @@
             @click="$emit('enroll')"
             class="btn-brand inline-flex items-center justify-center rounded-xl px-7 py-3 font-semibold text-white shadow-lg transition hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
           >
-            Enroll Now for {{ coursePrice }}
+            {{ actionLabel }}
           </button>
           <button
             class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/60 bg-white/10 px-7 py-3 font-semibold text-white transition hover:bg-white/20"
@@ -70,6 +70,10 @@ export default {
     course: {
       type: Object,
       required: true
+    },
+    actionLabel: {
+      type: String,
+      default: "Enroll Now"
     }
   },
   computed: {
@@ -83,10 +87,6 @@ export default {
       const total = Number(this.course.students || 0);
       return total.toLocaleString();
     },
-    coursePrice() {
-      const price = Number(this.course.price || 0);
-      return price === 0 ? "Free" : `$${price}`;
-    }
   }
 };
 </script>

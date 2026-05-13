@@ -20,6 +20,9 @@ const mutations = {
   UPDATE_ORDER(state, order) {
     state.items = state.items.map((item) => (item.id === order.id ? order : item));
     state.latestOrder = order;
+    if (state.selectedOrder?.id === order.id) {
+      state.selectedOrder = order;
+    }
   },
   SET_PAYMENT_INTENT(state, intent) {
     if (!intent?.orderId) return;
@@ -130,6 +133,15 @@ const actions = {
     }
   },
 
+  async ensurePaymentIntent({ state, dispatch }, orderId) {
+    const existingIntent = state.paymentIntents?.[orderId];
+    if (existingIntent?.paymentReference) {
+      return existingIntent;
+    }
+
+    return dispatch("createPaymentIntent", orderId);
+  },
+
   async verifyPayment({ commit }, { orderId, paymentReference, outcome = "SUCCESS", paymentMethod = "CARD" }) {
     try {
       commit("SET_LOADING", true);
@@ -157,7 +169,8 @@ const actions = {
 const getters = {
   orders: (state) => state.items,
   latestOrder: (state) => state.latestOrder,
-  selectedOrder: (state) => state.selectedOrder
+  selectedOrder: (state) => state.selectedOrder,
+  paymentIntentByOrderId: (state) => (orderId) => state.paymentIntents?.[orderId] || null
 };
 
 export default {

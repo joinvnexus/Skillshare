@@ -24,9 +24,9 @@
           @click="$emit('enroll')"
           class="btn-brand w-full rounded-xl px-4 py-3 font-semibold text-white"
         >
-          Enroll Now
+          {{ actionLabel }}
         </button>
-        <p class="mt-3 text-sm text-[var(--muted)]">30-Day Money-Back Guarantee</p>
+        <p class="mt-3 text-sm text-[var(--muted)]">{{ actionHint }}</p>
       </div>
 
       <div class="border-t border-[var(--line)] px-5 py-4 text-left">
@@ -66,6 +66,14 @@ export default {
     course: {
       type: Object,
       required: true
+    },
+    actionLabel: {
+      type: String,
+      default: "Enroll Now"
+    },
+    actionHint: {
+      type: String,
+      default: "30-Day Money-Back Guarantee"
     }
   },
   setup(props) {

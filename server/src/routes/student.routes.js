@@ -421,6 +421,27 @@ router.post(
       return res.json({ data: existingEnrollment });
     }
 
+    if (courseUnitPrice(course) > 0) {
+      const paidOrder = await prisma.order.findFirst({
+        where: {
+          userId: req.auth.userId,
+          status: "PAID",
+          items: {
+            some: {
+              courseId
+            }
+          }
+        },
+        select: {
+          id: true
+        }
+      });
+
+      if (!paidOrder) {
+        throw new HttpError(403, "This course requires payment before enrollment");
+      }
+    }
+
     const [enrollment] = await prisma.$transaction([
       prisma.enrollment.create({
         data: {
@@ -543,6 +564,44 @@ router.post(
 
     if (courses.length !== courseIds.length) {
       throw new HttpError(404, "Some selected courses are unavailable");
+    }
+
+    const existingEnrollments = await prisma.enrollment.findMany({
+      where: {
+        userId: req.auth.userId,
+        courseId: {
+          in: courseIds
+        }
+      },
+      select: {
+        courseId: true
+      }
+    });
+
+    if (existingEnrollments.length > 0) {
+      throw new HttpError(409, "Some selected courses are already in your library");
+    }
+
+    const pendingOrder = await prisma.order.findFirst({
+      where: {
+        userId: req.auth.userId,
+        status: "PENDING",
+        items: {
+          some: {
+            courseId: {
+              in: courseIds
+            }
+          }
+        }
+      },
+      select: {
+        id: true,
+        orderNumber: true
+      }
+    });
+
+    if (pendingOrder) {
+      throw new HttpError(409, `Pending payment already exists for this selection (${pendingOrder.orderNumber})`);
     }
 
     const orderItems = courses.map((course) => {

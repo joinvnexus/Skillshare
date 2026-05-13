@@ -15,6 +15,7 @@
       <!-- Hero Section -->
       <CourseHero 
         :course="course"
+        :action-label="primaryActionLabel"
         @enroll="handleEnroll"
       />
       
@@ -76,6 +77,8 @@
               <div class="sticky top-24 space-y-6">
                 <CourseSidebar 
                   :course="course"
+                  :action-label="primaryActionLabel"
+                  :action-hint="primaryActionHint"
                   @enroll="handleEnroll"
                 />
               </div>
@@ -125,7 +128,9 @@ export default {
   },
   data() {
     return {
-      activeTab: 'overview'
+      activeTab: 'overview',
+      purchaseLoading: false,
+      isEnrolledInCourse: false
     }
   },
   computed: {
@@ -135,9 +140,37 @@ export default {
       'relatedCourses',
       'allCourses',
     ]),
+    ...mapState('auth', ['user']),
 
     course() {
        return this.currentCourse 
+    },
+    isPaidCourse() {
+      return Number(this.course?.price || 0) > 0
+    },
+    isInCart() {
+      return this.$store.getters['cart/inCart']?.(this.course?.id)
+    },
+    primaryActionLabel() {
+      if (this.purchaseLoading) {
+        return 'Processing...'
+      }
+      if (this.isEnrolledInCourse) {
+        return 'Continue Learning'
+      }
+      if (this.isPaidCourse) {
+        return this.isInCart ? 'Go to Cart' : `Add to Cart - $${Number(this.course?.price || 0).toFixed(2)}`
+      }
+      return 'Enroll for Free'
+    },
+    primaryActionHint() {
+      if (this.isEnrolledInCourse) {
+        return 'This course is already in your library.'
+      }
+      if (this.isPaidCourse) {
+        return this.isInCart ? 'This course is already in your cart.' : 'Secure checkout unlocks the course in your library.'
+      }
+      return 'Free courses are added to your library instantly.'
     },
     instructorCourses() {
       if (!this.course || !this.allCourses.length) return []
@@ -152,11 +185,26 @@ export default {
   methods: {
     ...mapActions('courses', ['fetchCourseById']),
     ...mapActions('enrollments', ['enrollInCourse', 'checkEnrollment']),
+    async syncEnrollmentState() {
+      if (!this.$store.getters['auth/isAuthenticated'] || !this.course?.id) {
+        this.isEnrolledInCourse = false
+        return
+      }
+
+      try {
+        this.isEnrolledInCourse = await this.checkEnrollment({
+          courseId: this.course.id
+        })
+      } catch (_error) {
+        this.isEnrolledInCourse = false
+      }
+    },
     async loadCourse(identifier) {
       if (!identifier) return
       this.activeTab = 'overview'
       try {
         await this.fetchCourseById(identifier)
+        await this.syncEnrollmentState()
       } catch (_error) {
         if (this.$route.name === 'CourseDetail') {
           this.$router.replace('/courses')
@@ -170,38 +218,40 @@ export default {
       const user = this.$store.state.auth.user
       
       if (!user) {
-        // Redirect to login if not authenticated
         this.$router.push({ name: 'Login', query: { redirect: this.$route.fullPath } })
         return
       }
-      
-      try {
-        this.$store.commit('ui/SET_LOADING', true)
-        
-        // Check if already enrolled
-        const isEnrolled = await this.checkEnrollment({ 
-          userId: user.id, 
-          courseId: this.course.id 
-        })
-        
-        if (isEnrolled) {
-          alert('You are already enrolled in this course!')
+
+      if (this.isEnrolledInCourse) {
+        this.$router.push('/dashboard/my-courses')
+        return
+      }
+
+      if (this.isPaidCourse) {
+        if (this.isInCart) {
+          this.$router.push('/dashboard/cart')
           return
         }
-        
-        // Enroll in the course
+
+        this.$store.dispatch('cart/addToCart', this.course)
+        this.$store.dispatch('ui/notify', { type: 'success', message: 'Course added to cart. Continue to checkout.' })
+        this.$router.push('/dashboard/cart')
+        return
+      }
+
+      try {
+        this.purchaseLoading = true
         await this.enrollInCourse({
-          userId: user.id,
           courseId: this.course.id,
           courseData: this.course
         })
-        
-        alert('Successfully enrolled! You can now access this course from your dashboard.')
+        this.isEnrolledInCourse = true
+        this.$store.dispatch('ui/notify', { type: 'success', message: 'Enrollment confirmed. Course added to your library.' })
         this.$router.push('/dashboard/my-courses')
       } catch (error) {
-        alert('Error enrolling in course: ' + error.message)
+        this.$store.dispatch('ui/notify', { type: 'error', message: error.message || 'Enrollment failed.' })
       } finally {
-        this.$store.commit('ui/SET_LOADING', false)
+        this.purchaseLoading = false
       }
     }
   },
@@ -212,6 +262,12 @@ export default {
   watch: {
     '$route.params.id'(identifier) {
       this.loadCourse(identifier)
+    },
+    user() {
+      this.syncEnrollmentState()
+    },
+    'course.id'() {
+      this.syncEnrollmentState()
     }
   }
 }

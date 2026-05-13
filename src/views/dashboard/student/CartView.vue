@@ -43,10 +43,12 @@
 
 <script setup>
 import { computed, ref } from "vue";
+import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import DashboardState from "@/components/dashboard/DashboardState.vue";
 
 const store = useStore();
+const router = useRouter();
 const loading = ref(false);
 const error = ref(null);
 const message = ref(null);
@@ -61,10 +63,13 @@ const checkout = async () => {
   error.value = null;
   message.value = null;
   try {
-    await store.dispatch("cart/checkoutCart", { markPaid: false, paymentMethod: "CARD" });
+    const order = await store.dispatch("cart/checkoutCart", { markPaid: false, paymentMethod: "CARD" });
     await store.dispatch("orders/fetchOrders");
-    message.value = "Order created. Complete payment from the Orders page.";
-    store.dispatch("ui/notify", { type: "success", message: "Order created. Complete payment from Orders." });
+    message.value = "Order created. Review payment details on the order page.";
+    store.dispatch("ui/notify", { type: "success", message: "Order created. Continue to payment." });
+    if (order?.id) {
+      router.push(`/dashboard/orders/${order.id}`);
+    }
   } catch (err) {
     error.value = err.message;
     store.dispatch("ui/notify", { type: "error", message: err.message });

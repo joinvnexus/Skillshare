@@ -12,6 +12,8 @@ describe("Student orders", () => {
   });
 
   it("creates a pending order for paid courses", async () => {
+    prisma.enrollment.findMany.mockResolvedValue([]);
+    prisma.order.findFirst.mockResolvedValue(null);
     prisma.course.findMany.mockResolvedValue([
       {
         id: "course-1",
@@ -55,5 +57,34 @@ describe("Student orders", () => {
     expect(response.status).toBe(201);
     expect(prisma.order.create).toHaveBeenCalled();
     expect(prisma.orderItem.createMany).toHaveBeenCalled();
+  });
+
+  it("rejects order creation for already enrolled courses", async () => {
+    prisma.course.findMany.mockResolvedValue([
+      {
+        id: "course-1",
+        slug: "course-1",
+        title: "Course One",
+        price: 50,
+        salePrice: null
+      }
+    ]);
+    prisma.enrollment.findMany.mockResolvedValue([{ courseId: "course-1" }]);
+
+    const token = signAccessToken({
+      userId: "student-1",
+      role: "STUDENT",
+      email: "student@example.com"
+    });
+
+    const response = await request(app)
+      .post(`${baseUrl}/student/me/orders`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        courseIds: ["course-1"],
+        paymentMethod: "CARD"
+      });
+
+    expect(response.status).toBe(409);
   });
 });

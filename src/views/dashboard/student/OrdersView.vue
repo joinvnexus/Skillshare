@@ -41,7 +41,7 @@
             :disabled="paymentLoadingId === order.id"
             @click="startPayment(order.id)"
           >
-            {{ paymentLoadingId === order.id ? "Preparing..." : "Start Payment" }}
+            {{ paymentLoadingId === order.id ? "Preparing..." : "Prepare Checkout" }}
           </button>
           <button
             v-if="intentByOrderId[order.id]"
@@ -50,7 +50,7 @@
             :disabled="paymentLoadingId === order.id"
             @click="verifyPayment(order.id, 'SUCCESS')"
           >
-            {{ paymentLoadingId === order.id ? "Confirming..." : "Mark Paid" }}
+            {{ paymentLoadingId === order.id ? "Confirming..." : "Complete Payment" }}
           </button>
           <button
             v-if="intentByOrderId[order.id]"
@@ -59,11 +59,21 @@
             :disabled="paymentLoadingId === order.id"
             @click="verifyPayment(order.id, 'FAILED')"
           >
-            {{ paymentLoadingId === order.id ? "Updating..." : "Mark Failed" }}
+            {{ paymentLoadingId === order.id ? "Updating..." : "Report Failure" }}
           </button>
           <span class="text-xs text-slate-500">
-            {{ intentByOrderId[order.id] ? "Verify payment outcome (success/fail)." : "Initialize payment first." }}
+            {{ intentByOrderId[order.id] ? "Complete the simulated payment to unlock your courses." : "Initialize checkout first." }}
           </span>
+        </div>
+
+        <div v-else class="mt-4 flex flex-wrap items-center gap-2">
+          <router-link
+            to="/dashboard/my-courses"
+            class="rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-700"
+          >
+            Open Course Library
+          </router-link>
+          <span class="text-xs text-slate-500">Payment confirmed. Your enrollments are active.</span>
         </div>
       </article>
     </div>
@@ -97,7 +107,7 @@ const reloadOrders = () => store.dispatch("orders/fetchOrders");
 const startPayment = async (orderId) => {
   paymentLoadingId.value = orderId;
   try {
-    await store.dispatch("orders/createPaymentIntent", orderId);
+    await store.dispatch("orders/ensurePaymentIntent", orderId);
     store.dispatch("ui/notify", { type: "success", message: "Payment initialized." });
   } catch (_error) {
     store.dispatch("ui/notify", { type: "error", message: store.state.orders.error || "Payment initialization failed." });
@@ -109,11 +119,7 @@ const startPayment = async (orderId) => {
 const verifyPayment = async (orderId, outcome) => {
   paymentLoadingId.value = orderId;
   try {
-    const intent = intentByOrderId.value[orderId];
-    if (!intent?.paymentReference) {
-      await store.dispatch("orders/createPaymentIntent", orderId);
-    }
-    const resolvedIntent = intentByOrderId.value[orderId] || intent;
+    const resolvedIntent = await store.dispatch("orders/ensurePaymentIntent", orderId);
     await store.dispatch("orders/verifyPayment", {
       orderId,
       paymentReference: resolvedIntent?.paymentReference,
