@@ -59,6 +59,7 @@ export const normalizeReview = (review) => {
 
 export const normalizeCourse = (course) => {
   const sections = course.sections || [];
+  const faqs = Array.isArray(course.faqs) ? course.faqs : [];
   const lessons = sections.reduce((total, section) => total + (section.lessons?.length || 0), 0);
   const instructorName = course.instructor?.user?.name || course.instructor?.name || course.instructor || "Unknown Instructor";
   const rating = toNumber(course.averageRating ?? course.rating);
@@ -95,6 +96,11 @@ export const normalizeCourse = (course) => {
     language: course.language || "English",
     Language: course.language || "English",
     certificate: Boolean(course.certificateEnabled ?? course.certificate),
+    faqs: faqs.map((faq) => ({
+      id: faq.id,
+      question: faq.question,
+      answer: faq.answer
+    })),
     sections: sections.map((section) => ({
       ...section,
       lessons: (section.lessons || []).map((lesson) => ({

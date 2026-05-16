@@ -67,6 +67,10 @@
             <span>Add to Wishlist</span>
           </button>
         </div>
+
+        <p class="mt-4 text-sm text-white/75 md:text-base">
+          {{ actionHint }}
+        </p>
       </div>
     </div>
   </section>
@@ -91,6 +95,10 @@ export default {
     actionLabel: {
       type: String,
       default: "Enroll Now"
+    },
+    actionHint: {
+      type: String,
+      default: ""
     }
   },
   computed: {

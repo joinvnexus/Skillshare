@@ -2,11 +2,11 @@
   <div class="course-curriculum space-y-4">
     <div>
       <h2 class="text-2xl font-bold text-[var(--text)] md:text-3xl">Course Curriculum</h2>
-      <p class="text-[var(--muted)]">{{ lessons }} lessons • {{ duration }}</p>
+      <p class="text-[var(--muted)]">{{ lessons }} lessons · {{ duration }}</p>
     </div>
 
     <div class="accordion overflow-hidden rounded-lg border border-[var(--line)] shadow-sm">
-      <div v-for="(section, index) in sections" :key="index" class="accordion-item border-b border-[var(--line)] last:border-b-0">
+      <div v-for="(section, index) in sections" :key="section.id || index" class="accordion-item border-b border-[var(--line)] last:border-b-0">
         <button
           class="accordion-header flex w-full flex-col items-start justify-between gap-2 px-4 py-4 text-left transition-colors duration-200 sm:flex-row sm:items-center md:px-6 md:py-5"
           :class="activeSection === index ? 'bg-[var(--brand)] text-white' : 'bg-[var(--surface-soft)] text-[var(--text)] hover:bg-[var(--bg-alt)]'"
@@ -23,7 +23,7 @@
             <span class="font-medium">{{ section.title }}</span>
           </div>
           <div class="section-meta text-sm" :class="activeSection === index ? 'text-white/85' : 'text-[var(--muted)]'">
-            {{ section.lessons.length }} lessons • {{ section.duration }}
+            {{ (section.lessons || []).length }} lessons · {{ getSectionDuration(section) }}
           </div>
         </button>
 
@@ -36,8 +36,8 @@
         >
           <ul class="space-y-3 px-4 py-2 md:px-6 md:py-3">
             <li
-              v-for="(lesson, lessonIndex) in section.lessons"
-              :key="lessonIndex"
+              v-for="(lesson, lessonIndex) in section.lessons || []"
+              :key="lesson.id || lessonIndex"
               class="lesson flex items-center gap-4 rounded border-b border-[var(--line)] px-2 py-3 transition-colors duration-150 last:border-b-0 hover:bg-[var(--surface-soft)]"
             >
               <i
@@ -48,6 +48,7 @@
                 }"
               ></i>
               <span class="flex-1 text-[var(--text)]">{{ lesson.title }}</span>
+              <span v-if="lesson.isPreview" class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">Preview</span>
               <span class="duration text-sm text-[var(--muted)]">{{ lesson.duration }}</span>
             </li>
           </ul>
@@ -82,6 +83,23 @@ export default {
   methods: {
     toggleSection(index) {
       this.activeSection = this.activeSection === index ? null : index;
+    },
+    getSectionDuration(section) {
+      const totalMinutes = (section.lessons || []).reduce((sum, lesson) => {
+        return sum + Number.parseInt(lesson.durationMinutes || 0, 10);
+      }, 0);
+
+      if (!totalMinutes) {
+        return "Self paced";
+      }
+
+      if (totalMinutes < 60) {
+        return `${totalMinutes} min`;
+      }
+
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return minutes ? `${hours}h ${minutes}m` : `${hours}h`;
     }
   }
 };

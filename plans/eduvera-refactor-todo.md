@@ -63,24 +63,24 @@
 
 ## Phase 4: Public Site Refactor
 
-- [ ] Refactor home page into final public marketing shell
-- [ ] Refactor course list page to full dynamic catalog page
-- [ ] Add query-param synced search, filter, sort, and pagination
-- [ ] Refactor course detail page into modular sections
-- [ ] Make learning-path pages fully dynamic and API-driven
+- [x] Refactor home page into final public marketing shell
+- [x] Refactor course list page to full dynamic catalog page
+- [x] Add query-param synced search, filter, sort, and pagination
+- [x] Refactor course detail page into modular sections
+- [x] Make learning-path pages fully dynamic and API-driven
 - [ ] Refactor blog listing and blog detail
 - [ ] Refactor instructors listing and instructor detail
 - [ ] Refactor resources, support, contact pages into same content system
 
 ## Phase 5: Catalog and Course Experience
 
-- [ ] Standardize course card component
-- [ ] Standardize course hero/detail CTA logic
-- [ ] Show guest / enrolled / paid / free states properly
-- [ ] Show instructor, rating, lessons, duration, and category consistently
-- [ ] Show curriculum from real section/lesson data
-- [ ] Show FAQ and review modules from API
-- [ ] Add related courses and recommendation sections
+- [x] Standardize course card component
+- [x] Standardize course hero/detail CTA logic
+- [x] Show guest / enrolled / paid / free states properly
+- [x] Show instructor, rating, lessons, duration, and category consistently
+- [x] Show curriculum from real section/lesson data
+- [x] Show FAQ and review modules from API
+- [x] Add related courses and recommendation sections
 - [ ] Add category landing pages if needed
 
 ## Phase 6: Cart, Checkout, and Enrollment

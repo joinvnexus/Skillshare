@@ -13,7 +13,7 @@
             :class="{ 'text-yellow-400': i <= Math.round(rating), 'text-[var(--line)]': i > Math.round(rating) }"
           ></i>
         </div>
-        <div class="count text-sm text-[var(--muted)]">Based on {{ reviews.length }} reviews</div>
+        <div class="count text-sm text-[var(--muted)]">Based on {{ totalReviewsLabel }} reviews</div>
       </div>
 
       <div class="rating-bars w-full flex-1 space-y-3">
@@ -29,7 +29,12 @@
       </div>
     </div>
 
-    <div class="reviews-list space-y-6">
+    <div v-if="reviews.length === 0" class="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--surface-soft)] px-4 py-10 text-center">
+      <h3 class="text-lg font-semibold text-[var(--text)]">No published reviews yet.</h3>
+      <p class="mt-2 text-sm text-[var(--muted)]">This course will show learner feedback here once reviews are submitted.</p>
+    </div>
+
+    <div v-else class="reviews-list space-y-6">
       <article v-for="review in reviews" :key="review.id" class="review border-b border-[var(--line)] py-6 last:border-b-0">
         <div class="review-header mb-4 flex gap-4">
           <div class="avatar h-12 w-12 overflow-hidden rounded-full border-2 border-white shadow">
@@ -75,58 +80,27 @@ export default {
       type: Number,
       required: true
     },
+    totalReviews: {
+      type: Number,
+      default: 0
+    },
     reviews: {
       type: Array,
       default: () => []
     }
   },
-  data() {
-    return {
-      totalReviews: 1250,
-      sampleReviews: [
-        {
-          id: 1,
-          name: "Alex Johnson",
-          avatar: "/images/avatars/avatar1.jpg",
-          rating: 5,
-          date: "2 weeks ago",
-          title: "Excellent course!",
-          content: "This course exceeded my expectations. The projects are practical and easy to follow."
-        },
-        {
-          id: 2,
-          name: "Sarah Miller",
-          avatar: "/images/avatars/avatar2.jpg",
-          rating: 4,
-          date: "1 month ago",
-          title: "Great content",
-          content: "Very comprehensive and hands-on. Some modules could go deeper, but overall a strong course."
-        },
-        {
-          id: 3,
-          name: "Michael Chen",
-          avatar: "/images/avatars/avatar3.jpg",
-          rating: 5,
-          date: "2 months ago",
-          title: "Best Vue course",
-          content: "Clear teaching style and up-to-date material. Highly recommended for practical learners."
-        }
-      ]
-    };
-  },
-  created() {
-    if (this.reviews.length === 0) {
-      this.$emit("update:reviews", this.sampleReviews);
+  computed: {
+    totalReviewsLabel() {
+      return this.totalReviews || this.reviews.length;
     }
   },
   methods: {
     getStarCount(star) {
-      const counts = { 5: 850, 4: 250, 3: 100, 2: 30, 1: 20 };
-      return counts[star] || 0;
+      return this.reviews.filter((review) => Math.round(review.rating || 0) === star).length;
     },
     getStarPercentage(star) {
       const count = this.getStarCount(star);
-      return (count / this.totalReviews) * 100;
+      return this.reviews.length ? (count / this.reviews.length) * 100 : 0;
     }
   }
 };

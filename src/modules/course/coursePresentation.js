@@ -123,6 +123,7 @@ export const buildCourseIncludes = (course = {}) => [
 export const buildPrimaryCourseActionState = ({
   course,
   purchaseLoading = false,
+  isAuthenticated = false,
   isEnrolled = false,
   isInCart = false
 }) => {
@@ -132,6 +133,15 @@ export const buildPrimaryCourseActionState = ({
     return {
       label: "Processing...",
       hint: "We are preparing your next step."
+    };
+  }
+
+  if (!isAuthenticated) {
+    return {
+      label: isPaidCourse ? "Sign in to purchase" : "Sign in to enroll",
+      hint: isPaidCourse
+        ? "Create an account or sign in to continue to cart and checkout."
+        : "Create an account or sign in to add this free course to your library."
     };
   }
 

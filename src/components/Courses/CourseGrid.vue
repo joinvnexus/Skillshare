@@ -18,236 +18,30 @@
     </div>
 
     <div v-else class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2 lg:gap-6 xl:grid-cols-3 2xl:grid-cols-4">
-      <div
+      <CourseCard
         v-for="(course, index) in courses"
         :key="course.id"
-        class="group section-shell interactive-lift flex h-full cursor-pointer flex-col overflow-hidden border border-transparent hover:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
-        :data-aos="'fade-up'"
-        :data-aos-delay="(index % 4) * 100"
-        :aria-label="`Course: ${course.title}`"
-        tabindex="0"
-        @keydown.enter="navigateToCourse(course)"
-        @click="navigateToCourse(course)"
-      >
-        <div class="relative overflow-hidden bg-[var(--surface-soft)] pt-[56.25%]">
-          <img
-            :src="getCourseImage(course)"
-            :alt="course.title"
-            class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-            @error="handleImageError"
-          />
-          
-          <div class="absolute top-3 left-3 right-3 flex flex-wrap gap-2 pointer-events-none">
-            <span
-              v-if="course.isPopular"
-              class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/95 backdrop-blur-sm text-white"
-              aria-label="Popular course"
-            >
-              <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-              Popular
-            </span>
-            
-            <span
-              v-if="course.isFeatured"
-              class="inline-flex items-center gap-1 rounded-full bg-[var(--brand)]/95 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm"
-              aria-label="Featured course"
-            >
-              <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-              </svg>
-              Featured
-            </span>
-            
-            <span
-              v-if="course.price === 0"
-              class="rounded-full bg-[var(--brand-strong)]/95 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm"
-              aria-label="Free course"
-            >
-              FREE
-            </span>
-            
-            <span
-              v-if="course.discount"
-              class="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/95 backdrop-blur-sm text-white"
-              aria-label="Discount available"
-            >
-              -{{ course.discount }}%
-            </span>
-            
-            <span
-              v-if="isCourseNew(course.createdAt)"
-              class="rounded-full bg-[var(--accent)]/95 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm"
-              aria-label="New course"
-            >
-              NEW
-            </span>
-          </div>
-          
-          <div v-if="course.category" 
-               class="absolute bottom-3 left-3">
-            <span class="px-3 py-1 rounded-lg text-xs font-medium bg-black/60 backdrop-blur-sm text-white">
-              {{ course.category }}
-            </span>
-          </div>
-        </div>
-
-        <div class="flex flex-1 flex-col p-5 lg:p-5">
-          <h3 class="mb-2 line-clamp-2 text-lg font-bold text-[var(--text)] transition-colors group-hover:text-[var(--brand-strong)]">
-            <router-link
-              :to="'/courses/' + getCourseIdentifier(course)"
-              class="hover:no-underline focus:outline-none"
-              :aria-label="`View ${course.title} course details`"
-            >
-              {{ course.title }}
-            </router-link>
-          </h3>
-          
-          <p class="mb-3 text-sm text-[var(--muted)]">
-            By <span class="font-medium">{{ course.instructor || 'Unknown Instructor' }}</span>
-          </p>
-
-          <p class="mb-4 flex-1 line-clamp-2 text-sm text-[var(--muted)]"
-             :title="course.description">
-            {{ getCourseCopy(course) }}
-          </p>
-
-          <div class="flex items-center gap-2 mb-4">
-            <div class="flex items-center">
-              <div class="flex" :aria-label="`Rating: ${course.rating || 0} out of 5 stars`">
-                <span v-for="star in 5" :key="star">
-                  <svg
-                    class="w-4 h-4"
-                    :class="star <= Math.round(course.rating || 0) ? 'text-yellow-400' : 'text-[var(--line)]'"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                </span>
-              </div>
-              <span class="ml-2 text-sm font-semibold text-[var(--text)]">
-                {{ formatRating(course.rating) }}
-              </span>
-            </div>
-            
-            <span v-if="course.reviewCount" 
-                  class="text-sm text-[var(--muted)]">
-              ({{ formatNumber(course.reviewCount) }})
-            </span>
-
-            <span v-if="course.level" 
-                  class="ml-auto text-xs px-2 py-1 rounded-full"
-                  :class="getLevelClass(course.level)">
-              {{ course.level }}
-            </span>
-          </div>
-
-          <div class="mb-4 flex items-center justify-between text-sm text-[var(--muted)]">
-            <div class="flex items-center gap-1">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>{{ formatDuration(course.duration) }}</span>
-            </div>
-            
-            <div class="flex items-center gap-1">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              <span>{{ formatNumber(course.students || 0) }}</span>
-            </div>
-            
-            <div v-if="course.lessons" class="flex items-center gap-1">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-              <span>{{ course.lessons }} lessons</span>
-            </div>
-          </div>
-          
-          <div class="mt-auto border-t border-[var(--line)] pt-4">
-            <div class="mb-4 flex items-center justify-between">
-              <div class="flex items-baseline gap-2">
-                <span v-if="course.originalPrice && course.originalPrice > course.price" 
-                      class="text-sm text-[var(--muted)] line-through">
-                  ${{ course.originalPrice }}
-                </span>
-                <span class="text-xl font-bold" 
-                      :class="course.price === 0 ? 'text-[var(--brand-strong)]' : 'text-[var(--text)]'">
-                  {{ formatPrice(course) }}
-                </span>
-                <span v-if="course.price > 0 && course.price < 20" 
-                      class="text-xs font-medium text-[var(--brand-strong)]">
-                  Great value!
-                </span>
-              </div>
-              
-              <button
-                v-if="showBookmark"
-                @click.stop="toggleBookmark(course.id)"
-                class="rounded-full p-2 transition-colors hover:bg-[var(--bg-alt)]"
-                :aria-label="course.bookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'"
-              >
-                <svg class="h-5 w-5" :class="course.bookmarked ? 'fill-red-500 text-red-500' : 'text-[var(--muted)]/70'"
-                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-              </button>
-            </div>
-
-            <router-link
-              :to="'/courses/' + getCourseIdentifier(course)"
-              class="btn-brand flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-center font-semibold text-white transition-all duration-200"
-              :class="course.price === 0 
-                ? 'opacity-95' 
-                : ''"
-              :aria-label="course.price === 0 ? `Enroll in ${course.title} for free` : `View ${course.title} course details`"
-            >
-              <span>{{ course.price === 0 ? 'Enroll for Free' : 'View Course' }}</span>
-              <svg class="h-4 w-4 transition-transform group-hover:translate-x-1"
-                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </router-link>
-
-            <div v-if="course.price > 0" 
-                 class="mt-3 text-center">
-              <button
-                @click.stop="addToCart(course)"
-                class="text-sm font-semibold text-[var(--brand-strong)] transition-colors hover:text-[var(--brand)]"
-              >
-                + Add to cart
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+        variant="grid"
+        :show-bookmark="showBookmark"
+        :show-add-to-cart="true"
+        :clickable-card="true"
+        aos="fade-up"
+        :aos-delay="(index % 4) * 100"
+        @bookmark-toggle="toggleBookmark"
+        @add-to-cart="addToCart"
+      />
     </div>
   </div>
 </template>
 
 <script>
-import {
-  formatCompactNumber,
-  formatCoursePrice,
-  formatCourseRating,
-  getCourseIdentifier,
-  getCourseLevelClass,
-  isCourseNew,
-  resolveCourseDescription,
-  resolveCourseImage
-} from '@/modules/course/coursePresentation'
+import CourseCard from '@/modules/course/components/CourseCard.vue'
 
 export default {
   name: 'CourseListing',
+  components: {
+    CourseCard
+  },
   props: {
     courses: {
       type: Array,
@@ -264,53 +58,6 @@ export default {
     }
   },
   methods: {
-    getCourseIdentifier(course) {
-      return getCourseIdentifier(course);
-    },
-
-    navigateToCourse(course) {
-      const identifier = this.getCourseIdentifier(course);
-      if (!identifier) return;
-      this.$router.push(`/courses/${identifier}`);
-    },
-    
-    handleImageError(event) {
-      event.target.src = resolveCourseImage(null);
-    },
-    
-    formatDuration(duration) {
-      if (!duration) return 'N/A';
-      return duration;
-    },
-    
-    formatNumber(num) {
-      return formatCompactNumber(num);
-    },
-
-    formatPrice(course) {
-      return formatCoursePrice(course);
-    },
-
-    formatRating(rating) {
-      return formatCourseRating(rating);
-    },
-
-    getCourseCopy(course) {
-      return resolveCourseDescription(course);
-    },
-
-    getCourseImage(course) {
-      return resolveCourseImage(course);
-    },
-    
-    getLevelClass(level) {
-      return getCourseLevelClass(level);
-    },
-    
-    isCourseNew(createdAt) {
-      return isCourseNew(createdAt);
-    },
-    
     toggleBookmark(courseId) {
       this.$emit('bookmark-toggle', courseId);
     },
@@ -321,45 +68,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-/* Custom animations */
-.group:hover .group-hover\:translate-x-1 {
-  transform: translateX(0.25rem);
-}
-
-/* Custom scrollbar for course descriptions if needed */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Smooth transitions */
-.transition-all {
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms;
-}
-
-/* Focus styles for accessibility */
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* Custom animation for skeleton loading */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-</style>

@@ -16,6 +16,7 @@
       <CourseHero 
         :course="course"
         :action-label="primaryActionLabel"
+        :action-hint="primaryActionHint"
         @enroll="handleEnroll"
       />
 
@@ -31,6 +32,7 @@
                 <CourseTabs 
                   :course="course"
                   :activeTab="activeTab"
+                  :tabs="courseTabs"
                   @tab-change="changeTab"
                 />
               
@@ -62,6 +64,8 @@
                   :coursesCount="instructorCourses.length + 1"
                   :reviews="course.reviewCount || course.reviews?.length || 0"
                   :bio="course.instructorBio"
+                  :instructor-image-url="course.instructorImage"
+                  :instructor-rating="course.instructorRating"
                 />
                 
                 <!-- Reviews Tab -->
@@ -69,6 +73,12 @@
                   v-if="activeTab === 'reviews'"
                   :rating="course.rating"
                   :reviews="course.reviews"
+                  :total-reviews="course.reviewCount || course.reviews?.length || 0"
+                />
+
+                <CourseFAQ
+                  v-if="activeTab === 'faq'"
+                  :faqs="course.faqs || []"
                 />
               </div>
               </div>
@@ -111,6 +121,7 @@ import CourseOverview from '@/components/Coursesinglepage/CourseOverview.vue'
 import CourseCurriculum from '@/components/Coursesinglepage/CourseCurriculum.vue'
 import CourseInstructor from '@/components/Coursesinglepage/CourseInstructor.vue'
 import CourseReviews from '@/components/Coursesinglepage/CourseReviews.vue'
+import CourseFAQ from '@/components/Coursesinglepage/CourseFAQ.vue'
 import CourseSidebar from '@/components/Coursesinglepage/CourseSidebar.vue'
 import RelatedCourses from '@/components/Coursesinglepage/RelatedCourses.vue'
 import CourseDetailHighlights from '@/modules/course/components/CourseDetailHighlights.vue'
@@ -127,6 +138,7 @@ export default {
     CourseCurriculum,
     CourseInstructor,
     CourseReviews,
+    CourseFAQ,
     CourseSidebar,
     RelatedCourses,
     CourseDetailHighlights
@@ -146,6 +158,9 @@ export default {
     ]),
     ...mapState('catalog', ['allCourses']),
     ...mapState('auth', ['user']),
+    isAuthenticated() {
+      return this.$store.getters['auth/isAuthenticated']
+    },
 
     course() {
        return this.currentCourse 
@@ -166,9 +181,24 @@ export default {
       return buildPrimaryCourseActionState({
         course: this.course,
         purchaseLoading: this.purchaseLoading,
+        isAuthenticated: this.isAuthenticated,
         isEnrolled: this.isEnrolledInCourse,
         isInCart: this.isInCart
       })
+    },
+    courseTabs() {
+      const tabs = [
+        { id: 'overview', label: 'Overview' },
+        { id: 'curriculum', label: 'Curriculum' },
+        { id: 'instructor', label: 'Instructor' },
+        { id: 'reviews', label: 'Reviews' }
+      ]
+
+      if ((this.course?.faqs || []).length) {
+        tabs.push({ id: 'faq', label: 'FAQ' })
+      }
+
+      return tabs
     },
     instructorCourses() {
       if (!this.course || !this.allCourses.length) return []

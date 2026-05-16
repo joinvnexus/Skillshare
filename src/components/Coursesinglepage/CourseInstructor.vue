@@ -12,9 +12,14 @@
           <h3 class="text-xl font-bold text-[var(--text)] md:text-2xl">{{ instructor }}</h3>
           <div class="rating mt-1 flex items-center gap-2">
             <div class="flex text-yellow-400">
-              <i v-for="i in 5" :key="i" class="fas fa-star"></i>
+              <i
+                v-for="i in 5"
+                :key="i"
+                class="fas fa-star"
+                :class="{ 'text-[var(--line)]': i > Math.round(instructorRating || 0) }"
+              ></i>
             </div>
-            <span class="text-[var(--muted)]">4.9 Instructor Rating</span>
+            <span class="text-[var(--muted)]">{{ instructorRatingText }} Instructor Rating</span>
           </div>
         </div>
 
@@ -34,7 +39,7 @@
         </div>
 
         <p class="bio leading-relaxed text-[var(--muted)]">
-          {{ instructor }} {{ bio || "has not provided a bio." }}
+          {{ bio || `${instructor} has not provided a bio.` }}
         </p>
       </div>
     </div>
@@ -45,43 +50,41 @@
       </h3>
 
       <div class="courses-grid grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <article
-          v-for="course in otherCourses"
-          :key="course.id"
-          class="section-shell interactive-lift overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--surface)]"
-        >
-          <img :src="course.image" :alt="course.title" class="h-40 w-full object-cover" />
-          <div class="space-y-2 p-4">
-            <h4 class="line-clamp-2 font-semibold text-[var(--text)]">{{ course.title }}</h4>
-            <div class="meta flex items-center justify-between pt-2">
-              <span class="rating flex items-center gap-1 font-medium text-yellow-500">
-                <i class="fas fa-star"></i>
-                <span>{{ course.rating.toFixed(1) }}</span>
-              </span>
-              <span class="price font-bold text-[var(--brand-strong)]">${{ course.price }}</span>
-            </div>
-          </div>
-        </article>
+        <CourseCard v-for="course in otherCourses" :key="course.id" :course="course" variant="compact" />
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import CourseCard from "@/modules/course/components/CourseCard.vue";
+import { formatCourseRating } from "@/modules/course/coursePresentation";
+
 export default {
   name: "CourseInstructor",
+  components: {
+    CourseCard
+  },
   props: {
     instructor: { type: String, required: true },
     otherCourses: { type: Array, default: () => [] },
     students: { type: [Number, String], default: "" },
     coursesCount: { type: [Number, String], default: "" },
     reviews: { type: [Number, String], default: "" },
-    bio: { type: String, default: "" }
+    bio: { type: String, default: "" },
+    instructorImageUrl: { type: String, default: "" },
+    instructorRating: { type: Number, default: 0 }
   },
   computed: {
     instructorImage() {
+      if (this.instructorImageUrl) {
+        return this.instructorImageUrl;
+      }
       const name = this.instructor.toLowerCase().replace(/\s+/g, "-");
       return `/images/instructors/${name}.jpg`;
+    },
+    instructorRatingText() {
+      return formatCourseRating(this.instructorRating || 0);
     }
   }
 };
