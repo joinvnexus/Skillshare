@@ -14,6 +14,15 @@
           <span>{{ course.title }}</span>
         </div>
 
+        <div class="mb-4 flex flex-wrap gap-2">
+          <span v-if="course.category" class="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-white/82">
+            {{ course.category }}
+          </span>
+          <span class="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-white/82">
+            {{ coursePrice }}
+          </span>
+        </div>
+
         <h1 class="mb-4 text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
           {{ course.title }}
         </h1>
@@ -28,7 +37,7 @@
                 :class="{ 'text-slate-500': i > Math.round(course.rating || 0) }"
               ></i>
             </div>
-            <span>({{ (course.rating || 0).toFixed(1) }})</span>
+            <span>({{ courseRating }})</span>
           </div>
           <div class="flex items-center">
             <i class="fas fa-users mr-1.5"></i>
@@ -64,6 +73,14 @@
 </template>
 
 <script>
+import {
+  formatCoursePrice,
+  formatCourseRating,
+  formatStudentCount,
+  resolveCourseDescription,
+  resolveCourseImage
+} from "@/modules/course/coursePresentation";
+
 export default {
   name: "CourseHero",
   props: {
@@ -78,15 +95,20 @@ export default {
   },
   computed: {
     heroImage() {
-      return this.course.image || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80";
+      return resolveCourseImage(this.course, "hero");
     },
     heroDescription() {
-      return this.course.descriptionExtended || this.course.description || "Build practical skills with a project-based curriculum and guided lessons.";
+      return resolveCourseDescription(this.course, "hero");
     },
     formattedStudents() {
-      const total = Number(this.course.students || 0);
-      return total.toLocaleString();
+      return formatStudentCount(this.course.students || 0);
     },
+    coursePrice() {
+      return formatCoursePrice(this.course);
+    },
+    courseRating() {
+      return formatCourseRating(this.course.rating);
+    }
   }
 };
 </script>

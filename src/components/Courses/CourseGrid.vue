@@ -31,7 +31,7 @@
       >
         <div class="relative overflow-hidden bg-[var(--surface-soft)] pt-[56.25%]">
           <img
-            :src="course.image || '/placeholder-course.jpg'"
+            :src="getCourseImage(course)"
             :alt="course.title"
             class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
@@ -111,7 +111,7 @@
 
           <p class="mb-4 flex-1 line-clamp-2 text-sm text-[var(--muted)]"
              :title="course.description">
-            {{ course.description || 'No description available' }}
+            {{ getCourseCopy(course) }}
           </p>
 
           <div class="flex items-center gap-2 mb-4">
@@ -129,7 +129,7 @@
                 </span>
               </div>
               <span class="ml-2 text-sm font-semibold text-[var(--text)]">
-                {{ (course.rating || 0).toFixed(1) }}
+                {{ formatRating(course.rating) }}
               </span>
             </div>
             
@@ -180,7 +180,7 @@
                 </span>
                 <span class="text-xl font-bold" 
                       :class="course.price === 0 ? 'text-[var(--brand-strong)]' : 'text-[var(--text)]'">
-                  {{ course.price === 0 ? 'Free' : `$${course.price}` }}
+                  {{ formatPrice(course) }}
                 </span>
                 <span v-if="course.price > 0 && course.price < 20" 
                       class="text-xs font-medium text-[var(--brand-strong)]">
@@ -235,6 +235,17 @@
 </template>
 
 <script>
+import {
+  formatCompactNumber,
+  formatCoursePrice,
+  formatCourseRating,
+  getCourseIdentifier,
+  getCourseLevelClass,
+  isCourseNew,
+  resolveCourseDescription,
+  resolveCourseImage
+} from '@/modules/course/coursePresentation'
+
 export default {
   name: 'CourseListing',
   props: {
@@ -254,7 +265,7 @@ export default {
   },
   methods: {
     getCourseIdentifier(course) {
-      return course?.slug || course?.id;
+      return getCourseIdentifier(course);
     },
 
     navigateToCourse(course) {
@@ -264,7 +275,7 @@ export default {
     },
     
     handleImageError(event) {
-      event.target.src = '/placeholder-course.jpg';
+      event.target.src = resolveCourseImage(null);
     },
     
     formatDuration(duration) {
@@ -273,31 +284,31 @@ export default {
     },
     
     formatNumber(num) {
-      if (num >= 1000000) {
-        return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-      }
-      if (num >= 1000) {
-        return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-      }
-      return num.toString();
+      return formatCompactNumber(num);
+    },
+
+    formatPrice(course) {
+      return formatCoursePrice(course);
+    },
+
+    formatRating(rating) {
+      return formatCourseRating(rating);
+    },
+
+    getCourseCopy(course) {
+      return resolveCourseDescription(course);
+    },
+
+    getCourseImage(course) {
+      return resolveCourseImage(course);
     },
     
     getLevelClass(level) {
-      const classes = {
-        'Beginner': 'bg-[var(--bg-alt)] text-[var(--brand-strong)]',
-        'Intermediate': 'bg-yellow-100 text-yellow-800',
-        'Advanced': 'bg-red-100 text-red-700',
-        'All Levels': 'bg-[var(--surface-soft)] text-[var(--brand-strong)]'
-      };
-      return classes[level] || 'bg-[var(--surface-soft)] text-[var(--muted)]';
+      return getCourseLevelClass(level);
     },
     
     isCourseNew(createdAt) {
-      if (!createdAt) return false;
-      const createdDate = new Date(createdAt);
-      const now = new Date();
-      const diffDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
-      return diffDays <= 30; // New if created within last 30 days
+      return isCourseNew(createdAt);
     },
     
     toggleBookmark(courseId) {

@@ -59,6 +59,11 @@
 
 <script>
 import { computed } from "vue";
+import {
+  buildCourseDetailMeta,
+  buildCourseIncludes,
+  formatCoursePrice
+} from "@/modules/course/coursePresentation";
 
 export default {
   name: "CourseSidebar",
@@ -77,25 +82,12 @@ export default {
     }
   },
   setup(props) {
-    const metaItems = computed(() => [
-      { icon: "fas fa-clock", label: "Duration", value: props.course.duration || "N/A" },
-      { icon: "fas fa-book", label: "Lessons", value: props.course.lessons || "N/A" },
-      { icon: "fas fa-signal", label: "Level", value: props.course.level || "All Levels" },
-      { icon: "fas fa-language", label: "Language", value: props.course.language || "N/A" },
-      { icon: "fas fa-certificate", label: "Certificate", value: props.course.certificate ? "Yes" : "No" }
-    ]);
+    const metaItems = computed(() => buildCourseDetailMeta(props.course));
 
-    const courseFeatures = computed(() => [
-      { icon: "fas fa-video", text: `${props.course.duration || "0h"} on-demand video` },
-      { icon: "fas fa-file-alt", text: `${props.course.lessons || 0} downloadable resources` },
-      { icon: "fas fa-mobile-alt", text: "Access on mobile and TV" },
-      { icon: "fas fa-infinity", text: "Full lifetime access" },
-      { icon: "fas fa-trophy", text: "Certificate of completion" }
-    ]);
+    const courseFeatures = computed(() => buildCourseIncludes(props.course));
 
     const currentPrice = computed(() => {
-      const price = Number(props.course.price || 0);
-      return price === 0 ? "Free" : `$${price}`;
+      return formatCoursePrice(props.course);
     });
 
     const socialLinks = [

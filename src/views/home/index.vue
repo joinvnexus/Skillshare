@@ -2,7 +2,7 @@
   <main id="main-content" class="home-shell mx-auto max-w-[1680px] pb-24">
     <HeroSection />
 
-    <section class="mx-auto -mt-12 max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="homepage-overview" class="mx-auto -mt-12 max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="proof-panel grid gap-4 rounded-[32px] border border-white/60 p-5 shadow-[0_32px_70px_rgba(15,23,42,0.12)] backdrop-blur md:grid-cols-[1.35fr_0.95fr] lg:gap-5 lg:p-7">
         <div class="grid gap-4 lg:grid-cols-3">
           <article v-for="stat in platformStats" :key="stat.label" class="rounded-[24px] border border-slate-200/80 bg-white/92 p-5">
@@ -90,6 +90,8 @@
 </template>
 
 <script setup>
+import { computed, onBeforeMount } from 'vue'
+import { useStore } from 'vuex'
 import HeroSection from '@/components/Home/HeroSection.vue'
 import FeaturesSection from '@/components/Home/FeaturesSection.vue'
 import RolePathsSection from '@/components/Home/RolePathsSection.vue'
@@ -101,29 +103,42 @@ import NewsletterSignup from '@/components/Home/NewsletterSignup.vue'
 import BlogCard from '@/components/Home/BlogCard.vue'
 import CTASection from '@/components/Home/CTASction.vue'
 
-const platformStats = [
-  {
-    label: 'Role Journeys',
-    value: '3',
-    copy: 'Separate student, instructor, and admin paths with their own dashboards and workflows.'
-  },
-  {
-    label: 'Practical Flow',
-    value: '12+',
-    copy: 'Reusable purchase, publishing, moderation, and learning flows spread across the product.'
-  },
-  {
-    label: 'Responsive Surface',
-    value: '100%',
-    copy: 'Public pages and dashboard layouts now adapt more cleanly across desktop and mobile breakpoints.'
-  }
-]
+const store = useStore()
 
-const entryLinks = [
-  { label: 'Start learning as a student', meta: 'Courses + orders', to: '/courses' },
-  { label: 'Set up your instructor workspace', meta: 'Teach + publish', to: '/signup' },
-  { label: 'Review platform operations', meta: 'Support + controls', to: '/support' }
-]
+const allCourses = computed(() => store.state.catalog.allCourses)
+const freeCourseCount = computed(() => allCourses.value.filter((course) => Number(course.price || 0) === 0).length)
+const featuredCourseCount = computed(() => allCourses.value.filter((course) => course.isFeatured).length)
+const categoryCount = computed(() => new Set(allCourses.value.map((course) => course.category).filter(Boolean)).size)
+
+const platformStats = computed(() => [
+  {
+    label: 'Courses Live',
+    value: String(allCourses.value.length || 0),
+    copy: 'Public catalog inventory now flows from the same shared marketplace state used across home and discovery pages.'
+  },
+  {
+    label: 'Categories',
+    value: `${categoryCount.value}+`,
+    copy: 'Discovery is easier when visitors can quickly see how broad the active catalog actually is.'
+  },
+  {
+    label: 'Free Starts',
+    value: String(freeCourseCount.value || 0),
+    copy: 'Low-friction entry points help new learners reach checkout or enrollment with less hesitation.'
+  }
+])
+
+const entryLinks = computed(() => [
+  { label: 'Start learning as a student', meta: `${allCourses.value.length || 0} courses live`, to: '/courses' },
+  { label: 'Set up your instructor workspace', meta: `${featuredCourseCount.value || 0} featured picks`, to: '/signup' },
+  { label: 'Review platform operations', meta: `${freeCourseCount.value || 0} free starts`, to: '/support' }
+])
+
+onBeforeMount(() => {
+  if (!allCourses.value.length) {
+    store.dispatch('catalog/fetchCourses').catch(() => {})
+  }
+})
 </script>
 
 <style scoped>

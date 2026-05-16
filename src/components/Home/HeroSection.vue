@@ -93,23 +93,7 @@
 </template>
 
 <script>
-const heroMetrics = [
-  {
-    value: '50+',
-    label: 'Courses',
-    copy: 'Structured learning inventory across practical technical tracks.'
-  },
-  {
-    value: '3',
-    label: 'Role Views',
-    copy: 'Student, instructor, and admin experiences connected through one product.'
-  },
-  {
-    value: '10k+',
-    label: 'Learners',
-    copy: 'Social proof and marketplace depth surfaced directly in the landing flow.'
-  }
-]
+import { mapActions, mapState } from 'vuex'
 
 const heroFlows = [
   {
@@ -139,14 +123,44 @@ export default {
   name: 'HeroSection',
   data() {
     return {
-      heroMetrics,
       heroFlows,
       quickLinks
     }
   },
+  computed: {
+    ...mapState('catalog', ['allCourses']),
+    heroMetrics() {
+      const categoryCount = new Set(this.allCourses.map((course) => course.category).filter(Boolean)).size
+      const freeCourseCount = this.allCourses.filter((course) => Number(course.price || 0) === 0).length
+
+      return [
+        {
+          value: `${this.allCourses.length || 0}+`,
+          label: 'Courses',
+          copy: 'Structured learning inventory across practical technical tracks.'
+        },
+        {
+          value: `${categoryCount || 0}+`,
+          label: 'Categories',
+          copy: 'Discovery breadth is now visible before learners hit the main catalog.'
+        },
+        {
+          value: `${freeCourseCount || 0}+`,
+          label: 'Free Starts',
+          copy: 'Low-friction entry courses are surfaced as part of the landing experience.'
+        }
+      ]
+    }
+  },
+  created() {
+    if (!this.allCourses.length) {
+      this.fetchCourses().catch(() => {})
+    }
+  },
   methods: {
+    ...mapActions('catalog', ['fetchCourses']),
     scrollToContent() {
-      const content = document.querySelector('#main-content')
+      const content = document.querySelector('#homepage-overview')
       if (content) {
         content.scrollIntoView({ behavior: 'smooth' })
       }

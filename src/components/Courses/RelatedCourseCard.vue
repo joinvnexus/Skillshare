@@ -2,7 +2,7 @@
   <article class="section-shell interactive-lift flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
     <div class="relative">
       <img
-        :src="course.image || '/placeholder-course.jpg'"
+        :src="courseImage"
         :alt="course.title"
         class="h-36 w-full object-cover"
       />
@@ -22,7 +22,7 @@
       </h3>
       <p class="mb-2 text-sm text-[var(--muted)]">By {{ course.instructor || "Unknown Instructor" }}</p>
       <p class="mb-3 line-clamp-2 text-sm text-[var(--muted)]">
-        {{ course.description || "No description available" }}
+        {{ courseDescription }}
       </p>
 
       <div class="mt-auto">
@@ -40,10 +40,10 @@
                 </svg>
               </span>
             </div>
-            <span class="text-sm text-[var(--muted)]">{{ (course.rating || 0).toFixed(1) }}</span>
+            <span class="text-sm text-[var(--muted)]">{{ courseRating }}</span>
           </div>
           <span class="font-semibold text-[var(--text)]">
-            {{ course.price === 0 ? "Free" : "$" + course.price }}
+            {{ coursePrice }}
           </span>
         </div>
 
@@ -59,6 +59,14 @@
 </template>
 
 <script>
+import {
+  formatCoursePrice,
+  formatCourseRating,
+  getCourseIdentifier,
+  resolveCourseDescription,
+  resolveCourseImage
+} from "@/modules/course/coursePresentation";
+
 export default {
   name: "RelatedCourseCard",
   props: {
@@ -69,7 +77,19 @@ export default {
   },
   computed: {
     courseIdentifier() {
-      return this.course?.slug || this.course?.id;
+      return getCourseIdentifier(this.course);
+    },
+    courseImage() {
+      return resolveCourseImage(this.course);
+    },
+    courseDescription() {
+      return resolveCourseDescription(this.course);
+    },
+    coursePrice() {
+      return formatCoursePrice(this.course);
+    },
+    courseRating() {
+      return formatCourseRating(this.course.rating);
     }
   }
 };

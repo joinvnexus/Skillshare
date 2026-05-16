@@ -18,6 +18,8 @@
         :action-label="primaryActionLabel"
         @enroll="handleEnroll"
       />
+
+      <CourseDetailHighlights :course="course" />
       
       <!-- Main Content -->
       <div class="course-content py-10 md:py-14">
@@ -111,6 +113,8 @@ import CourseInstructor from '@/components/Coursesinglepage/CourseInstructor.vue
 import CourseReviews from '@/components/Coursesinglepage/CourseReviews.vue'
 import CourseSidebar from '@/components/Coursesinglepage/CourseSidebar.vue'
 import RelatedCourses from '@/components/Coursesinglepage/RelatedCourses.vue'
+import CourseDetailHighlights from '@/modules/course/components/CourseDetailHighlights.vue'
+import { buildPrimaryCourseActionState } from '@/modules/course/coursePresentation'
 
 export default {
   name: 'CourseDetail',
@@ -124,7 +128,8 @@ export default {
     CourseInstructor,
     CourseReviews,
     CourseSidebar,
-    RelatedCourses
+    RelatedCourses,
+    CourseDetailHighlights
   },
   data() {
     return {
@@ -152,25 +157,18 @@ export default {
       return this.$store.getters['cart/inCart']?.(this.course?.id)
     },
     primaryActionLabel() {
-      if (this.purchaseLoading) {
-        return 'Processing...'
-      }
-      if (this.isEnrolledInCourse) {
-        return 'Continue Learning'
-      }
-      if (this.isPaidCourse) {
-        return this.isInCart ? 'Go to Cart' : `Add to Cart - $${Number(this.course?.price || 0).toFixed(2)}`
-      }
-      return 'Enroll for Free'
+      return this.primaryActionState.label
     },
     primaryActionHint() {
-      if (this.isEnrolledInCourse) {
-        return 'This course is already in your library.'
-      }
-      if (this.isPaidCourse) {
-        return this.isInCart ? 'This course is already in your cart.' : 'Secure checkout unlocks the course in your library.'
-      }
-      return 'Free courses are added to your library instantly.'
+      return this.primaryActionState.hint
+    },
+    primaryActionState() {
+      return buildPrimaryCourseActionState({
+        course: this.course,
+        purchaseLoading: this.purchaseLoading,
+        isEnrolled: this.isEnrolledInCourse,
+        isInCart: this.isInCart
+      })
     },
     instructorCourses() {
       if (!this.course || !this.allCourses.length) return []

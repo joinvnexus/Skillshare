@@ -92,6 +92,7 @@ export const normalizeCourse = (course) => {
     instructorBio: course.instructor?.bio || course.instructorBio || "",
     instructorRating: toNumber(course.instructor?.averageRating ?? course.instructorRating ?? rating),
     instructorReviews: course.instructor?.totalReviews ?? course.instructorReviews ?? 0,
+    language: course.language || "English",
     Language: course.language || "English",
     certificate: Boolean(course.certificateEnabled ?? course.certificate),
     sections: sections.map((section) => ({

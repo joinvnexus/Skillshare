@@ -27,7 +27,7 @@
         >
           <div class="relative h-52 overflow-hidden">
             <img
-              :src="course.image || fallbackImage"
+              :src="getCourseImage(course)"
               :alt="course.title"
               class="h-full w-full object-cover transition-transform duration-500"
               :class="{ 'scale-105': hoveredCourse === index }"
@@ -47,7 +47,7 @@
                 <p class="mt-1 text-lg font-bold">{{ course.title }}</p>
               </div>
               <span class="rounded-2xl bg-white/14 px-3 py-2 text-sm font-semibold backdrop-blur">
-                {{ formatPrice(course.price) }}
+                {{ formatPrice(course) }}
               </span>
             </div>
           </div>
@@ -66,13 +66,13 @@
                   </svg>
                 </span>
               </div>
-              <span>{{ Number(course.rating || 0).toFixed(1) }}</span>
+              <span>{{ formatRating(course.rating) }}</span>
               <span class="h-1 w-1 rounded-full bg-slate-300"></span>
               <span>{{ course.students || 0 }} students</span>
             </div>
 
             <p class="mt-4 flex-1 text-sm leading-7 text-slate-600">
-              {{ course.descriptionExtended || course.description || 'Practical curriculum designed to move from theory into shipping work.' }}
+              {{ getCourseCopy(course) }}
             </p>
 
             <div class="mt-5 flex items-center justify-between gap-3 rounded-[22px] border border-slate-200/80 bg-slate-50/90 px-4 py-3 text-sm">
@@ -81,7 +81,7 @@
                 <p class="mt-1 text-slate-500">{{ course.lessons || 0 }} lessons</p>
               </div>
               <router-link
-                :to="`/courses/${course.slug || course.id}`"
+                :to="getCourseLink(course)"
                 class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white transition hover:bg-slate-800"
               >
                 View details
@@ -97,6 +97,13 @@
 import LoadingSpinner from '@/components/UI/LoadingSpinner.vue'
 import ErrorState from '@/components/UI/ErrorState.vue'
 import { mapState, mapGetters, mapActions } from 'vuex'
+import {
+  formatCoursePrice,
+  formatCourseRating,
+  getCourseIdentifier,
+  resolveCourseDescription,
+  resolveCourseImage
+} from '@/modules/course/coursePresentation'
 
 export default {
   name: 'CoursePreviews',
@@ -107,7 +114,6 @@ export default {
   data() {
     return {
       hoveredCourse: null,
-      fallbackImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80'
     }
   },
   computed: {
@@ -121,8 +127,20 @@ export default {
   },
   methods: {
     ...mapActions('catalog', ['fetchCourses']),
-    formatPrice(price) {
-      return Number(price) === 0 ? 'Free' : `$${price ?? 0}`
+    formatPrice(course) {
+      return formatCoursePrice(course)
+    },
+    formatRating(rating) {
+      return formatCourseRating(rating)
+    },
+    getCourseLink(course) {
+      return `/courses/${getCourseIdentifier(course)}`
+    },
+    getCourseCopy(course) {
+      return resolveCourseDescription(course)
+    },
+    getCourseImage(course) {
+      return resolveCourseImage(course)
     }
   }
 }

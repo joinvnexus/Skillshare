@@ -22,7 +22,7 @@
         >
           <div class="relative h-48 w-full overflow-hidden">
             <img
-              :src="course.image || fallbackImage"
+              :src="getCourseImage(course)"
               :alt="course.title"
               class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
             >
@@ -47,7 +47,7 @@
               </h3>
               <p class="mt-2 text-sm font-medium text-slate-600">By {{ course.instructor || 'Unknown Instructor' }}</p>
               <p class="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">
-                {{ course.description || 'No description available' }}
+                {{ getCourseCopy(course) }}
               </p>
             </div>
 
@@ -67,23 +67,23 @@
                     </span>
                   </div>
                   <span class="text-sm text-slate-600">
-                    {{ (course.rating || 0).toFixed(1) }} ({{ course.reviews || 0 }})
+                    {{ formatRating(course.rating) }} ({{ course.reviewCount || 0 }})
                   </span>
                 </div>
                 <span class="text-base font-semibold text-slate-900">
-                  {{ course.price === 0 ? 'Free' : '$' + course.price }}
+                  {{ formatPrice(course) }}
                 </span>
               </div>
 
               <div class="flex space-x-2">
                 <router-link
-                  :to="`/courses/${course.slug || course.id}`"
+                  :to="getCourseLink(course)"
                   class="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-center text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
                 >
                   View Details
                 </router-link>
                 <router-link
-                  :to="`/courses/${course.slug || course.id}`"
+                  :to="getCourseLink(course)"
                   class="btn-brand flex-1 rounded-xl px-4 py-2 text-center text-sm"
                 >
                   Enroll Now
@@ -112,15 +112,17 @@
 import { mapState, mapGetters, mapActions } from 'vuex'
 import LoadingSpinner from '@/components/UI/LoadingSpinner.vue'
 import ErrorState from '@/components/UI/ErrorState.vue'
+import {
+  formatCoursePrice,
+  formatCourseRating,
+  getCourseIdentifier,
+  resolveCourseDescription,
+  resolveCourseImage
+} from '@/modules/course/coursePresentation'
 
 export default {
   name: 'PopularCourses',
   components: { LoadingSpinner, ErrorState },
-  data() {
-    return {
-      fallbackImage: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80'
-    }
-  },
   computed: {
     ...mapState('catalog', ['loading', 'error']),
     ...mapGetters('catalog', ['getPopularCourses']),
@@ -130,6 +132,21 @@ export default {
   },
   methods: {
     ...mapActions('catalog', ['fetchCourses']),
+    formatPrice(course) {
+      return formatCoursePrice(course)
+    },
+    formatRating(rating) {
+      return formatCourseRating(rating)
+    },
+    getCourseCopy(course) {
+      return resolveCourseDescription(course)
+    },
+    getCourseImage(course) {
+      return resolveCourseImage(course)
+    },
+    getCourseLink(course) {
+      return `/courses/${getCourseIdentifier(course)}`
+    },
     fetchPopularCourses() {
       this.fetchCourses()
     }

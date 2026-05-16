@@ -4,37 +4,25 @@
   <div class="min-h-screen py-6">
     <HeroSection />
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="section-shell mb-8 p-7 text-center" data-aos="fade-in">
-        <h1 class="mb-2 text-3xl font-bold text-[var(--text)] md:text-4xl">Explore Our Courses</h1>
-        <p class="mx-auto max-w-2xl text-lg text-[var(--muted)]">
-          Find the perfect course to advance your skills
-        </p>
-      </div>
+      <CatalogSummaryBar
+        class="mb-8"
+        :courses="$store.state.catalog.allCourses"
+        label="Marketplace Snapshot"
+        title="Browse the catalog with clear inventory context."
+        description="This layer keeps the public marketplace legible before visitors dive into filters, pagination, and course-by-course evaluation."
+      />
 
       <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
         <SidebarFilters class="flex-shrink-0 lg:w-64 xl:w-72" :filtered-courses-count="courseCount" />
 
         <main class="min-w-0 flex-1">
-          <div class="section-shell mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between" data-aos="fade-left">
-            <p class="text-[var(--muted)]">
-              Showing {{ paginatedCourses.length }} of {{ courseCount }} courses
-              <span v-if="hasFilters" class="text-sm text-[var(--muted)]/80">(filtered)</span>
-            </p>
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-semibold text-[var(--muted)]">Sort by</span>
-              <select
-                v-model="localSortBy"
-                @change="updateSort"
-                class="rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)] focus:border-[var(--accent)] focus:outline-none"
-              >
-                <option value="newest">Newest</option>
-                <option value="popular">Most Popular</option>
-                <option value="rated">Highest Rated</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-              </select>
-            </div>
-          </div>
+          <CatalogToolbar
+            :visible-count="paginatedCourses.length"
+            :total-count="courseCount"
+            :has-filters="hasFilters"
+            :sort-by="localSortBy"
+            @sort-change="updateSort"
+          />
 
           <LoadingSpinner v-if="loading" />
           <ErrorState v-else-if="error" :error="error" @retry="initializeCatalogPage($route.query)" />
@@ -72,6 +60,8 @@
   import ErrorState from '@/components/UI/ErrorState.vue'
   import NoResults from '@/components/UI/NoResults.vue'
   import LoadingSpinner from '@/components/UI/LoadingSpinner.vue'
+  import CatalogSummaryBar from '@/modules/catalog/components/CatalogSummaryBar.vue'
+  import CatalogToolbar from '@/modules/catalog/components/CatalogToolbar.vue'
 
   export default {
     components: {
@@ -81,7 +71,9 @@
       Pagination,
       ErrorState,
       NoResults,
-      LoadingSpinner
+      LoadingSpinner,
+      CatalogSummaryBar,
+      CatalogToolbar
     },
     // Updated computed and methods
     computed: {
@@ -103,8 +95,8 @@
       syncCatalogQuery() {
         this.$router.replace({ name: 'courses', query: this.$store.getters['catalog/routeQuery'] })
       },
-      updateSort(e) {
-        this.setSortBy(e.target.value)
+      updateSort(sortBy) {
+        this.setSortBy(sortBy)
         this.syncCatalogQuery()
       },
       ensureAuthOrRedirect() {
